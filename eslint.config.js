@@ -22,9 +22,6 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    plugins: {
-      prettier: prettier,
-    },
     rules: {
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
       'react-refresh/only-export-components': 'warn',
