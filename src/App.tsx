@@ -1,5 +1,10 @@
+import { Button } from 'antd'
 function App() {
-  return <div className="text-3xl font-bold underline">Hello World</div>
+  return (
+    <>
+      <Button type="primary">Click me</Button>
+    </>
+  )
 }
 
 export default App
