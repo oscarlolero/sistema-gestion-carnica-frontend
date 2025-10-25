@@ -1,3 +1,4 @@
+import { Button } from 'antd'
 import { useProducts } from '../queries'
 
 export const ProductsListPage = () => {
@@ -7,8 +8,11 @@ export const ProductsListPage = () => {
   if (error) return <div>Error: {error.message}</div>
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <h1>Products</h1>
+      <Button type="primary" onClick={() => {}}>
+        Add Product
+      </Button>
       <ul>
         {products?.map((product) => (
           <li key={product.id}>{product.name}</li>
