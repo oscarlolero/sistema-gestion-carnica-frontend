@@ -1,8 +1,9 @@
-import { Button } from 'antd'
+import { Outlet } from 'react-router-dom'
+
 function App() {
   return (
     <>
-      <Button type="primary">Click me</Button>
+      <Outlet />
     </>
   )
 }
