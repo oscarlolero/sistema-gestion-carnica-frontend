@@ -82,6 +82,9 @@ export type Product = z.infer<typeof productSchema>
 // Datos que se envían al backend (sin ID)
 export type CreateProductDto = Omit<Product, 'id'>
 
+// Update DTO should only include modified fields
+export type UpdateProductDto = Partial<CreateProductDto>
+
 // Datos que vienen del backend (ya con IDs o timestamps)
 export interface ProductResponse extends Product {
   id: number
