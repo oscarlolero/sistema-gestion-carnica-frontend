@@ -5,10 +5,14 @@ import {
   UpdateProductDto,
   ProductResponse,
 } from '@/features/products/types'
+import { PaginationParams } from '@/types'
 
 // GET /products
-export const getProducts = async (): Promise<ProductListResponse> => {
-  const res = await client.get('/products?include=categories,cuts')
+export const getProducts = async (
+  params: PaginationParams = { page: 1, limit: 10 },
+): Promise<ProductListResponse> => {
+  const { page = 1, limit = 10 } = params
+  const res = await client.get(`/products?include=categories,cuts&page=${page}&limit=${limit}`)
   return res.data
 }
 

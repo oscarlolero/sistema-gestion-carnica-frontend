@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PaginatedResponse } from '@/types'
 
 /**
  * 🧱 0. Tipos auxiliares para relaciones y precios por corte
@@ -101,5 +102,5 @@ export interface ProductResponse extends Product {
   updatedAt: string
 }
 
-// Resultado de una lista de productos
-export type ProductListResponse = ProductResponse[]
+// Resultado de una lista de productos con paginación
+export type ProductListResponse = PaginatedResponse<ProductResponse>

@@ -18,7 +18,17 @@ type Option = { id: number; name: string }
 type TableRecord = ProductResponse
 
 export const ProductsListPage = () => {
-  const { data: products, isLoading, error } = useProducts()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  const {
+    data: productsResponse,
+    isLoading,
+    error,
+  } = useProducts({
+    page: currentPage,
+    limit: pageSize,
+  })
   const { data: unitsRaw } = useUnits()
   const { data: categoriesRaw } = useCategories()
   const { data: cutsRaw } = useCuts()
@@ -100,7 +110,11 @@ export const ProductsListPage = () => {
               title="Eliminar producto"
               description="¿Estás seguro de que quieres eliminar este producto?"
               okButtonProps={{ danger: true }}
-              onConfirm={() => deleteMutation.mutate(record.id)}
+              onConfirm={() =>
+                deleteMutation.mutate(record.id, {
+                  onSuccess: () => setCurrentPage(1), // Reset to first page after deleting
+                })
+              }
             >
               <Button danger size="small">
                 Eliminar
@@ -135,10 +149,22 @@ export const ProductsListPage = () => {
       <Table<TableRecord>
         rowKey="id"
         loading={isLoading}
-        dataSource={products || []}
+        dataSource={productsResponse?.data || []}
         columns={columns}
         bordered
         className="bg-white rounded-lg"
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: productsResponse?.pagination.total || 0,
+          showSizeChanger: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          onChange: (page, size) => {
+            setCurrentPage(page)
+            setPageSize(size || 10)
+          },
+        }}
       />
 
       <ProductFormModal
@@ -149,7 +175,10 @@ export const ProductsListPage = () => {
         isSubmitting={createMutation.isPending || updateMutation.isPending}
         options={options}
         onSubmit={(values: CreateProductDto) => {
-          const onSuccess = () => setOpen(false)
+          const onSuccess = () => {
+            setOpen(false)
+            setCurrentPage(1) // Reset to first page after creating/updating
+          }
           if (mode === 'create') createMutation.mutate(values, { onSuccess })
           else if (editing) updateMutation.mutate({ id: editing.id, dto: values }, { onSuccess })
         }}

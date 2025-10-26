@@ -9,16 +9,17 @@ import {
 } from '@/api/modules/products.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CreateProductDto, UpdateProductDto } from './types'
+import type { PaginationParams } from '@/types'
 
 const PRODUCTS_KEY = 'products'
 const UNITS_KEY = 'units'
 const CATEGORIES_KEY = 'categories'
 const CUTS_KEY = 'cuts'
 
-export const useProducts = () =>
+export const useProducts = (params: PaginationParams = { page: 1, limit: 10 }) =>
   useQuery({
-    queryKey: [PRODUCTS_KEY],
-    queryFn: getProducts,
+    queryKey: [PRODUCTS_KEY, params.page, params.limit],
+    queryFn: () => getProducts(params),
   })
 
 export const useCreateProduct = () => {
