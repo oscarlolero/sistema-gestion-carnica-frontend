@@ -42,28 +42,47 @@ export const ProductsListPage = () => {
 
   const columns: ColumnsType<TableRecord> = useMemo(
     () => [
-      { title: 'Name', dataIndex: 'name', key: 'name' },
+      { title: 'Nombre', dataIndex: 'name', key: 'name' },
       {
-        title: 'Base unit',
+        title: 'Categoría',
+        dataIndex: 'categories',
+        key: 'categories',
+        render: (categories: { categoryId: number }[]) => {
+          if (!categories || categories.length === 0) return '-'
+          const categoryNames = categories
+            .map((cat) => options.categories.find((c) => c.id === cat.categoryId)?.name)
+            .filter(Boolean)
+            .join(', ')
+          return categoryNames || '-'
+        },
+      },
+      {
+        title: 'Unidad Base',
         dataIndex: 'baseUnitId',
         key: 'baseUnitId',
         render: (id: number) => options.units.find((u) => u.id === id)?.name || '-',
       },
       {
-        title: 'Active',
+        title: 'Estado',
         dataIndex: 'isActive',
         key: 'isActive',
         render: (v: boolean) =>
-          v ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>,
+          v ? <Tag color="green">Activo</Tag> : <Tag color="red">Inactivo</Tag>,
       },
       {
-        title: 'Created',
+        title: 'Creado',
         dataIndex: 'createdAt',
         key: 'createdAt',
         render: (d?: string) => (d ? dateFormat(d) : ''),
       },
       {
-        title: 'Actions',
+        title: 'Actualizado',
+        dataIndex: 'updatedAt',
+        key: 'updatedAt',
+        render: (d?: string) => (d ? dateFormat(d) : ''),
+      },
+      {
+        title: 'Acciones',
         key: 'actions',
         render: (_: unknown, record: TableRecord) => (
           <div className="flex items-center gap-2">
@@ -75,16 +94,16 @@ export const ProductsListPage = () => {
                 setOpen(true)
               }}
             >
-              Edit
+              Editar
             </Button>
             <Popconfirm
-              title="Delete product"
-              description="Are you sure to delete this product?"
+              title="Eliminar producto"
+              description="¿Estás seguro de que quieres eliminar este producto?"
               okButtonProps={{ danger: true }}
               onConfirm={() => deleteMutation.mutate(record.id)}
             >
               <Button danger size="small">
-                Delete
+                Eliminar
               </Button>
             </Popconfirm>
           </div>
@@ -94,13 +113,13 @@ export const ProductsListPage = () => {
     [options, deleteMutation],
   )
 
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error: {error instanceof Error ? error.message : 'Error loading'}</div>
+  if (isLoading) return <div>Cargando...</div>
+  if (error) return <div>Error: {error instanceof Error ? error.message : 'Error al cargar'}</div>
 
   return (
     <div className="p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Products</h1>
+        <h1 className="text-xl font-semibold">Productos</h1>
         <Button
           type="primary"
           onClick={() => {
@@ -109,7 +128,7 @@ export const ProductsListPage = () => {
             setOpen(true)
           }}
         >
-          Add Product
+          Agregar Producto
         </Button>
       </div>
 

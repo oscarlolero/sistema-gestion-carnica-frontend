@@ -27,7 +27,7 @@ export const ProductFormModal = ({
     <Modal
       open={open}
       onCancel={onClose}
-      title={mode === 'create' ? 'Add product' : 'Edit product'}
+      title={mode === 'create' ? 'Agregar producto' : 'Editar producto'}
       footer={null}
       width={700}
     >
