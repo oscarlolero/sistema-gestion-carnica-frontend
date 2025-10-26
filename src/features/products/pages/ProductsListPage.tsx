@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
-import { Button, Popconfirm, Table, Tag } from 'antd'
+import { useMemo, useState, useEffect } from 'react'
+import { Button, Input, Popconfirm, Table, Tag } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import {
   useCategories,
@@ -12,7 +13,7 @@ import {
 } from '../queries'
 import { ProductFormModal } from '../components/ProductFormModal'
 import type { ProductResponse, CreateProductDto } from '../types'
-import { dateFormat } from '@/utils/dateFormat'
+import { dateFormat, useDebounce } from '@/utils'
 
 type Option = { id: number; name: string }
 type TableRecord = ProductResponse
@@ -20,6 +21,13 @@ type TableRecord = ProductResponse
 export const ProductsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearchTerm])
 
   const {
     data: productsResponse,
@@ -28,6 +36,7 @@ export const ProductsListPage = () => {
   } = useProducts({
     page: currentPage,
     limit: pageSize,
+    search: debouncedSearchTerm || undefined,
   })
   const { data: unitsRaw } = useUnits()
   const { data: categoriesRaw } = useCategories()
@@ -127,8 +136,15 @@ export const ProductsListPage = () => {
     [options, deleteMutation],
   )
 
-  if (isLoading) return <div>Cargando...</div>
   if (error) return <div>Error: {error instanceof Error ? error.message : 'Error al cargar'}</div>
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }
+
+  const handleSearchClear = () => {
+    setSearchTerm('')
+  }
 
   return (
     <div className="p-6 flex flex-col gap-4">
@@ -144,6 +160,22 @@ export const ProductsListPage = () => {
         >
           Agregar Producto
         </Button>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Buscar productos por nombre..."
+          allowClear
+          prefix={<SearchOutlined />}
+          size="large"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onClear={handleSearchClear}
+          className="max-w-md"
+        />
+        {searchTerm && searchTerm !== debouncedSearchTerm && (
+          <span className="text-sm text-gray-500">Buscando en 2 segundos...</span>
+        )}
       </div>
 
       <Table<TableRecord>

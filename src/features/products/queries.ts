@@ -16,9 +16,11 @@ const UNITS_KEY = 'units'
 const CATEGORIES_KEY = 'categories'
 const CUTS_KEY = 'cuts'
 
-export const useProducts = (params: PaginationParams = { page: 1, limit: 10 }) =>
+export const useProducts = (
+  params: PaginationParams & { search?: string } = { page: 1, limit: 10 },
+) =>
   useQuery({
-    queryKey: [PRODUCTS_KEY, params.page, params.limit],
+    queryKey: [PRODUCTS_KEY, params.page, params.limit, params.search],
     queryFn: () => getProducts(params),
   })
 

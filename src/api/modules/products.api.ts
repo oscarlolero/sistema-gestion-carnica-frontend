@@ -9,10 +9,13 @@ import { PaginationParams } from '@/types'
 
 // GET /products
 export const getProducts = async (
-  params: PaginationParams = { page: 1, limit: 10 },
+  params: PaginationParams & { search?: string } = { page: 1, limit: 10 },
 ): Promise<ProductListResponse> => {
-  const { page = 1, limit = 10 } = params
-  const res = await client.get(`/products?select=categories,cuts&page=${page}&limit=${limit}`)
+  const { page = 1, limit = 10, search } = params
+  const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
+  const res = await client.get(
+    `/products?select=categories,cuts&page=${page}&limit=${limit}${searchParam}`,
+  )
   return res.data
 }
 
