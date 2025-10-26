@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Button, Input, Popconfirm, Table, Tag } from 'antd'
+import { Button, Input, Popconfirm, Table, Tag, Select } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import {
@@ -14,6 +14,7 @@ import {
 import { ProductFormModal } from '../components/ProductFormModal'
 import type { ProductResponse, CreateProductDto } from '../types'
 import { dateFormat, useDebounce } from '@/utils'
+import type { SortField, SortOrder } from '@/types'
 
 type Option = { id: number; name: string }
 type TableRecord = ProductResponse
@@ -22,12 +23,14 @@ export const ProductsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortBy, setSortBy] = useState<SortField>('createdAt')
+  const [order, setOrder] = useState<SortOrder>('desc')
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
-  // Reset to first page when search term changes
+  // Reset to first page when search term or sorting changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm])
+  }, [debouncedSearchTerm, sortBy, order])
 
   const {
     data: productsResponse,
@@ -37,6 +40,8 @@ export const ProductsListPage = () => {
     page: currentPage,
     limit: pageSize,
     search: debouncedSearchTerm || undefined,
+    sortBy,
+    order,
   })
   const { data: unitsRaw } = useUnits()
   const { data: categoriesRaw } = useCategories()
@@ -162,7 +167,7 @@ export const ProductsListPage = () => {
         </Button>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <Input
           placeholder="Buscar productos por nombre..."
           allowClear
@@ -173,6 +178,31 @@ export const ProductsListPage = () => {
           onClear={handleSearchClear}
           className="max-w-md"
         />
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Ordenar por:</span>
+          <Select
+            value={sortBy}
+            onChange={setSortBy}
+            options={[
+              { label: 'Fecha de creación', value: 'createdAt' },
+              { label: 'Fecha de actualización', value: 'updatedAt' },
+              { label: 'Nombre', value: 'name' },
+              { label: 'Estado', value: 'isActive' },
+            ]}
+            className="min-w-40"
+          />
+          <Select
+            value={order}
+            onChange={setOrder}
+            options={[
+              { label: 'Ascendente', value: 'asc' },
+              { label: 'Descendente', value: 'desc' },
+            ]}
+            className="min-w-32"
+          />
+        </div>
+
         {searchTerm && searchTerm !== debouncedSearchTerm && (
           <span className="text-sm text-gray-500">Buscando en 2 segundos...</span>
         )}

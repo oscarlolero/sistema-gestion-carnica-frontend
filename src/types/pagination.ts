@@ -23,3 +23,15 @@ export interface PaginationParams {
   page?: number
   limit?: number
 }
+
+// Sorting parameters
+export type SortField = 'createdAt' | 'updatedAt' | 'name' | 'isActive'
+export type SortOrder = 'asc' | 'desc'
+
+export interface SortParams {
+  sortBy?: SortField
+  order?: SortOrder
+}
+
+// Extended pagination params with sorting
+export interface PaginationWithSortParams extends PaginationParams, SortParams {}

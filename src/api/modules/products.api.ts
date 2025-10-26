@@ -5,16 +5,18 @@ import {
   UpdateProductDto,
   ProductResponse,
 } from '@/features/products/types'
-import { PaginationParams } from '@/types'
+import { PaginationWithSortParams } from '@/types'
 
 // GET /products
 export const getProducts = async (
-  params: PaginationParams & { search?: string } = { page: 1, limit: 10 },
+  params: PaginationWithSortParams & { search?: string } = { page: 1, limit: 10 },
 ): Promise<ProductListResponse> => {
-  const { page = 1, limit = 10, search } = params
+  const { page = 1, limit = 10, search, sortBy, order } = params
   const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
+  const sortParam = sortBy ? `&sortBy=${sortBy}` : ''
+  const orderParam = order ? `&order=${order}` : ''
   const res = await client.get(
-    `/products?select=categories,cuts&page=${page}&limit=${limit}${searchParam}`,
+    `/products?select=categories,cuts&page=${page}&limit=${limit}${searchParam}${sortParam}${orderParam}`,
   )
   return res.data
 }
