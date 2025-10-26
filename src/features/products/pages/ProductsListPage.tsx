@@ -202,10 +202,6 @@ export const ProductsListPage = () => {
             className="min-w-32"
           />
         </div>
-
-        {searchTerm && searchTerm !== debouncedSearchTerm && (
-          <span className="text-sm text-gray-500">Buscando en 2 segundos...</span>
-        )}
       </div>
 
       <Table<TableRecord>
