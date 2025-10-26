@@ -8,13 +8,7 @@ import {
 
 // GET /products
 export const getProducts = async (): Promise<ProductListResponse> => {
-  const res = await client.get('/products')
-  return res.data
-}
-
-// GET /products/:id
-export const getProduct = async (id: number): Promise<ProductResponse> => {
-  const res = await client.get(`/products/${id}`)
+  const res = await client.get('/products?include=categories,cuts')
   return res.data
 }
 

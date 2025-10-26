@@ -3,6 +3,7 @@ import { Button, Input, InputNumber, Select, Switch, Card, Space, Typography } f
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { productSchema, type CreateProductDto, type Product } from '../types'
 import { z } from 'zod'
+import { useEffect } from 'react'
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -29,29 +30,36 @@ type Props = {
 
 type ProductFormValues = z.input<typeof productSchema>
 
-export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: Props) => {
-  const fallbackDefaults: ProductFormValues = {
-    id: undefined as unknown as number,
-    name: '',
-    description: null,
-    barcode: null,
-    pricePerKg: null,
-    pricePerUnit: null,
-    isActive: true,
-    baseUnitId: 0,
-    categories: [],
-    cuts: [],
-  }
+const fallbackDefaults: ProductFormValues = {
+  id: undefined as unknown as number,
+  name: '',
+  description: null,
+  barcode: null,
+  pricePerKg: null,
+  pricePerUnit: null,
+  isActive: true,
+  baseUnitId: 0,
+  categories: [],
+  cuts: [],
+}
 
+export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: Props) => {
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: { ...fallbackDefaults, ...(defaultValues as Partial<ProductFormValues>) },
     mode: 'onSubmit',
   })
+
+  // Reset form when defaultValues change
+  useEffect(() => {
+    const newValues = { ...fallbackDefaults, ...(defaultValues as Partial<ProductFormValues>) }
+    reset(newValues)
+  }, [defaultValues, reset])
 
   const { fields, append, remove } = useFieldArray({ control, name: 'cuts' })
 
@@ -67,10 +75,24 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
       {/* Tarjeta de Información Básica */}
       <Card
         title={
-          <Space>
-            <ShoppingOutlined className="text-blue-500" />
-            <Typography.Text strong>Información Básica</Typography.Text>
-          </Space>
+          <div className="flex items-center justify-between">
+            <Space>
+              <ShoppingOutlined className="text-blue-500" />
+              <Typography.Text strong>Información Básica</Typography.Text>
+            </Space>
+            <Controller
+              control={control}
+              name="isActive"
+              render={({ field }) => (
+                <Switch
+                  {...field}
+                  checked={!!field.value}
+                  checkedChildren="Activo"
+                  unCheckedChildren="Inactivo"
+                />
+              )}
+            />
+          </div>
         }
         className="shadow-sm border-0"
       >
@@ -203,101 +225,74 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
             )}
           </div>
 
-          <div className="lg:col-span-2 flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <SettingOutlined className="text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">Estado del Producto</span>
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <DollarOutlined className="text-gray-400" />
+                  Precio por Kg
+                  <span className="text-red-500">*</span>
+                </label>
+                <Controller
+                  control={control}
+                  name="pricePerKg"
+                  render={({ field }) => (
+                    <InputNumber
+                      {...field}
+                      min={0}
+                      step={0.01}
+                      size="large"
+                      className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
+                      placeholder="0.00"
+                      addonAfter="$/kg"
+                    />
+                  )}
+                />
+                {errors.pricePerKg && (
+                  <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <span className="text-red-400">⚠</span>
+                    {errors.pricePerKg.message as string}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <DollarOutlined className="text-gray-400" />
+                  Precio por Unidad
+                  <span className="text-red-500">*</span>
+                </label>
+                <Controller
+                  control={control}
+                  name="pricePerUnit"
+                  render={({ field }) => (
+                    <InputNumber
+                      {...field}
+                      min={0}
+                      step={0.01}
+                      size="large"
+                      className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
+                      placeholder="0.00"
+                      addonAfter="$/unit"
+                    />
+                  )}
+                />
+                {errors.pricePerUnit && (
+                  <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <span className="text-red-400">⚠</span>
+                    {errors.pricePerUnit.message as string}
+                  </div>
+                )}
+              </div>
             </div>
-            <Controller
-              control={control}
-              name="isActive"
-              render={({ field }) => (
-                <Switch
-                  {...field}
-                  checked={!!field.value}
-                  checkedChildren="Activo"
-                  unCheckedChildren="Inactivo"
-                />
-              )}
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Tarjeta de Información de Precios */}
-      <Card
-        title={
-          <Space>
-            <DollarOutlined className="text-green-500" />
-            <Typography.Text strong>Información de Precios</Typography.Text>
-          </Space>
-        }
-        className="shadow-sm border-0 bg-linear-to-r from-green-50/30 to-emerald-50/30"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <DollarOutlined className="text-gray-400" />
-              Precio por Kg
-              <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="pricePerKg"
-              render={({ field }) => (
-                <InputNumber
-                  {...field}
-                  min={0}
-                  step={0.01}
-                  size="large"
-                  className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
-                  placeholder="0.00"
-                  addonAfter="$/kg"
-                />
-              )}
-            />
-            {errors.pricePerKg && (
-              <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                <span className="text-red-400">⚠</span>
-                {errors.pricePerKg.message as string}
-              </div>
-            )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <DollarOutlined className="text-gray-400" />
-              Precio por Unidad
+          <div className="lg:col-span-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-700 flex items-center gap-2">
               <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="pricePerUnit"
-              render={({ field }) => (
-                <InputNumber
-                  {...field}
-                  min={0}
-                  step={0.01}
-                  size="large"
-                  className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
-                  placeholder="0.00"
-                  addonAfter="$/unit"
-                />
-              )}
-            />
-            {errors.pricePerUnit && (
-              <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                <span className="text-red-400">⚠</span>
-                {errors.pricePerUnit.message as string}
-              </div>
-            )}
+              <span>Al menos uno de los precios es obligatorio</span>
+            </p>
           </div>
-        </div>
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-700 flex items-center gap-2">
-            <span className="text-red-500">*</span>
-            <span>Al menos uno de los precios es obligatorio</span>
-          </p>
         </div>
       </Card>
 
@@ -339,7 +334,6 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                         {...field}
                         placeholder="Selecciona el corte"
                         options={options.cuts.map((c) => ({ value: c.id, label: c.name }))}
-                        value={field.value || undefined}
                       />
                     )}
                   />

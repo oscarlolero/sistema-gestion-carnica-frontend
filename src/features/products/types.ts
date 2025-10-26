@@ -3,7 +3,16 @@ import { z } from 'zod'
 /**
  * 🧱 0. Tipos auxiliares para relaciones y precios por corte
  */
-const nonNegativeNumber = z.number().nonnegative()
+const nonNegativeNumber = z
+  .union([z.number(), z.string()])
+  .transform((val) => {
+    if (val === null || val === undefined || val === '') return null
+    const num = Number(val)
+    return isNaN(num) ? null : num
+  })
+  .refine((val) => val === null || val >= 0, {
+    message: 'El valor debe ser un número no negativo',
+  })
 
 export const productCategorySchema = z.object({
   categoryId: z.number().int().positive('La categoría debe ser un ID positivo'),
