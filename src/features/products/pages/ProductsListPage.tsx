@@ -15,7 +15,6 @@ import type { ProductResponse, CreateProductDto } from '../types'
 import { dateFormat } from '@/utils/dateFormat'
 
 type Option = { id: number; name: string }
-
 type TableRecord = ProductResponse
 
 export const ProductsListPage = () => {
@@ -30,71 +29,70 @@ export const ProductsListPage = () => {
 
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'create' | 'edit'>('create')
-  const [editing, setEditing] = useState<TableRecord | undefined>()
-
-  const units: Option[] = useMemo(() => (unitsRaw || []) as Option[], [unitsRaw])
-  const categories: Option[] = useMemo(() => (categoriesRaw || []) as Option[], [categoriesRaw])
-  const cuts: Option[] = useMemo(() => (cutsRaw || []) as Option[], [cutsRaw])
+  const [editing, setEditing] = useState<TableRecord>()
 
   const options = useMemo(
     () => ({
-      units: units.map((u: Option) => ({ id: u.id, name: u.name })),
-      categories: categories.map((c: Option) => ({ id: c.id, name: c.name })),
-      cuts: cuts.map((c: Option) => ({ id: c.id, name: c.name })),
+      units: (unitsRaw || []) as Option[],
+      categories: (categoriesRaw || []) as Option[],
+      cuts: (cutsRaw || []) as Option[],
     }),
-    [units, categories, cuts],
+    [unitsRaw, categoriesRaw, cutsRaw],
   )
 
-  const columns: ColumnsType<TableRecord> = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    {
-      title: 'Base unit',
-      dataIndex: 'baseUnitId',
-      key: 'baseUnitId',
-      render: (id: number) => options.units.find((u: Option) => u.id === id)?.name || '-',
-    },
-    {
-      title: 'Active',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      render: (v: boolean) =>
-        v ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>,
-    },
-    {
-      title: 'Created',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (d?: string) => (d ? dateFormat(d) : ''),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: unknown, record: TableRecord) => (
-        <div className="flex items-center gap-2">
-          <Button
-            size="small"
-            onClick={() => {
-              setMode('edit')
-              setEditing(record)
-              setOpen(true)
-            }}
-          >
-            Edit
-          </Button>
-          <Popconfirm
-            title="Delete product"
-            description="Are you sure to delete this product?"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => deleteMutation.mutate(record.id)}
-          >
-            <Button danger size="small">
-              Delete
+  const columns: ColumnsType<TableRecord> = useMemo(
+    () => [
+      { title: 'Name', dataIndex: 'name', key: 'name' },
+      {
+        title: 'Base unit',
+        dataIndex: 'baseUnitId',
+        key: 'baseUnitId',
+        render: (id: number) => options.units.find((u) => u.id === id)?.name || '-',
+      },
+      {
+        title: 'Active',
+        dataIndex: 'isActive',
+        key: 'isActive',
+        render: (v: boolean) =>
+          v ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>,
+      },
+      {
+        title: 'Created',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (d?: string) => (d ? dateFormat(d) : ''),
+      },
+      {
+        title: 'Actions',
+        key: 'actions',
+        render: (_: unknown, record: TableRecord) => (
+          <div className="flex items-center gap-2">
+            <Button
+              size="small"
+              onClick={() => {
+                setMode('edit')
+                setEditing(record)
+                setOpen(true)
+              }}
+            >
+              Edit
             </Button>
-          </Popconfirm>
-        </div>
-      ),
-    },
-  ]
+            <Popconfirm
+              title="Delete product"
+              description="Are you sure to delete this product?"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => deleteMutation.mutate(record.id)}
+            >
+              <Button danger size="small">
+                Delete
+              </Button>
+            </Popconfirm>
+          </div>
+        ),
+      },
+    ],
+    [options, deleteMutation],
+  )
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error instanceof Error ? error.message : 'Error loading'}</div>
@@ -118,7 +116,7 @@ export const ProductsListPage = () => {
       <Table<TableRecord>
         rowKey="id"
         loading={isLoading}
-        dataSource={(products || []) as TableRecord[]}
+        dataSource={products || []}
         columns={columns}
         bordered
         className="bg-white rounded-lg"
@@ -132,14 +130,9 @@ export const ProductsListPage = () => {
         isSubmitting={createMutation.isPending || updateMutation.isPending}
         options={options}
         onSubmit={(values: CreateProductDto) => {
-          if (mode === 'create') {
-            createMutation.mutate(values, { onSuccess: () => setOpen(false) })
-          } else if (editing) {
-            updateMutation.mutate(
-              { id: editing.id, dto: values },
-              { onSuccess: () => setOpen(false) },
-            )
-          }
+          const onSuccess = () => setOpen(false)
+          if (mode === 'create') createMutation.mutate(values, { onSuccess })
+          else if (editing) updateMutation.mutate({ id: editing.id, dto: values }, { onSuccess })
         }}
       />
     </div>
