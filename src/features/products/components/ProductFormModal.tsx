@@ -29,7 +29,7 @@ export const ProductFormModal = ({
       onCancel={onClose}
       title={mode === 'create' ? 'Add product' : 'Edit product'}
       footer={null}
-      width={600}
+      width={700}
     >
       <ProductForm
         defaultValues={initialProduct}

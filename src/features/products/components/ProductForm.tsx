@@ -232,7 +232,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
             <Typography.Text strong>Información de Precios</Typography.Text>
           </Space>
         }
-        className="shadow-sm border-0 bg-gradient-to-r from-green-50/30 to-emerald-50/30"
+        className="shadow-sm border-0 bg-linear-to-r from-green-50/30 to-emerald-50/30"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-2">
@@ -252,7 +252,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                   size="large"
                   className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
                   placeholder="0.00"
-                  addonAfter="€/kg"
+                  addonAfter="$/kg"
                 />
               )}
             />
@@ -281,7 +281,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                   size="large"
                   className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
                   placeholder="0.00"
-                  addonAfter="€/unit"
+                  addonAfter="$/unit"
                 />
               )}
             />
@@ -309,11 +309,11 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
             <Typography.Text strong>Cortes del Producto</Typography.Text>
           </Space>
         }
-        className="shadow-sm border-0 bg-gradient-to-r from-purple-50/30 to-pink-50/30"
+        className="shadow-sm border-0 bg-linear-to-r from-purple-50/30 to-pink-50/30"
       >
         <div className="flex flex-col gap-4">
           {fields.length === 0 && (
-            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 px-4">
               <SettingOutlined className="text-4xl text-gray-300 mb-2" />
               <p className="text-sm">
                 No se han agregado cortes aún. Agrega cortes para definir precios específicos para
@@ -357,7 +357,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                         step={0.01}
                         className="w-full"
                         placeholder="0.00"
-                        addonAfter="€"
+                        addonAfter="$"
                       />
                     )}
                   />
@@ -375,7 +375,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                         step={0.01}
                         className="w-full"
                         placeholder="0.00"
-                        addonAfter="€"
+                        addonAfter="$"
                       />
                     )}
                   />
