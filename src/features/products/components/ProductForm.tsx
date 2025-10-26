@@ -204,7 +204,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="lg:col-span-2 flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <TagsOutlined className="text-gray-400" />
               Categorías

@@ -170,7 +170,7 @@ export const ProductsListPage = () => {
 
       <div className="flex items-center gap-4 flex-wrap">
         <Input
-          placeholder="Buscar productos por nombre..."
+          placeholder="Buscar por nombre o SKU..."
           allowClear
           prefix={<SearchOutlined />}
           size="large"
