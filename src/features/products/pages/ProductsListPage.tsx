@@ -23,8 +23,8 @@ export const ProductsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState<SortField>('createdAt')
-  const [order, setOrder] = useState<SortOrder>('desc')
+  const [sortBy, setSortBy] = useState<SortField>('name')
+  const [order, setOrder] = useState<SortOrder>('asc')
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
   // Reset to first page when search term or sorting changes
@@ -67,6 +67,7 @@ export const ProductsListPage = () => {
   const columns: ColumnsType<TableRecord> = useMemo(
     () => [
       { title: 'Nombre', dataIndex: 'name', key: 'name' },
+      { title: 'SKU', dataIndex: 'sku', key: 'sku', render: (sku: string) => sku || '-' },
       {
         title: 'Categoría',
         dataIndex: 'categories',

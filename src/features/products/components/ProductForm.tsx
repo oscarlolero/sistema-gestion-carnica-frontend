@@ -34,6 +34,7 @@ const fallbackDefaults: ProductFormValues = {
   id: undefined as unknown as number,
   name: '',
   description: null,
+  sku: null,
   barcode: null,
   pricePerKg: null,
   pricePerUnit: null,
@@ -119,6 +120,32 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
               <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
                 <span className="text-red-400">⚠</span>
                 {errors.name.message as string}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <ShoppingOutlined className="text-gray-400" />
+              SKU
+            </label>
+            <Controller
+              control={control}
+              name="sku"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  value={field.value ?? ''}
+                  size="large"
+                  className="rounded-lg border-gray-200 hover:border-blue-400 focus:border-blue-500 transition-colors"
+                  placeholder="Ingresa el SKU del producto"
+                />
+              )}
+            />
+            {errors.sku && (
+              <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                <span className="text-red-400">⚠</span>
+                {errors.sku.message as string}
               </div>
             )}
           </div>

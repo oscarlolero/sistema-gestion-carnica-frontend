@@ -52,6 +52,11 @@ export const productSchema = z
       .min(1, 'El nombre es requerido')
       .max(255, 'El nombre no debe exceder 255 caracteres'),
     description: z.string().max(500, 'Máximo 500 caracteres').nullish(),
+    sku: z
+      .string()
+      .min(1, 'El SKU no puede estar vacío')
+      .max(128, 'El SKU no debe exceder 128 caracteres')
+      .nullish(),
     barcode: z
       .string()
       .min(1, 'El código de barras no puede estar vacío')
