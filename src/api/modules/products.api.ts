@@ -12,7 +12,7 @@ export const getProducts = async (
   params: PaginationParams = { page: 1, limit: 10 },
 ): Promise<ProductListResponse> => {
   const { page = 1, limit = 10 } = params
-  const res = await client.get(`/products?include=categories,cuts&page=${page}&limit=${limit}`)
+  const res = await client.get(`/products?select=categories,cuts&page=${page}&limit=${limit}`)
   return res.data
 }
 
