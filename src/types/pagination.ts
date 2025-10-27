@@ -25,11 +25,10 @@ export interface PaginationParams {
 }
 
 // Sorting parameters
-export type SortField = 'createdAt' | 'updatedAt' | 'name' | 'isActive'
 export type SortOrder = 'asc' | 'desc'
 
 export interface SortParams {
-  sortBy?: SortField
+  sortBy?: string
   order?: SortOrder
 }
 

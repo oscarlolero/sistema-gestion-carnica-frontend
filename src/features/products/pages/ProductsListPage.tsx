@@ -14,7 +14,7 @@ import {
 import { ProductFormModal } from '../components/ProductFormModal'
 import type { ProductResponse, CreateProductDto } from '../types'
 import { dateFormat, useDebounce } from '@/utils'
-import type { SortField, SortOrder } from '@/types'
+import type { SortOrder } from '@/types'
 
 type Option = { id: number; name: string }
 type TableRecord = ProductResponse
@@ -23,7 +23,7 @@ export const ProductsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState<SortField>('name')
+  const [sortBy, setSortBy] = useState<string>('name')
   const [order, setOrder] = useState<SortOrder>('asc')
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
