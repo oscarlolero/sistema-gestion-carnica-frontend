@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Button, Input, Popconfirm, Table, Tag, Select, DatePicker, Switch } from 'antd'
+import { Button, Input, Popconfirm, Table, Tag, Select, DatePicker } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useTickets, useUpdateTicket, useDeleteTicket } from '../queries'
+import { useTickets, useDeleteTicket } from '../queries'
 import type { TicketResponse } from '../types'
 import { dateFormat, useDebounce, formatCurrency } from '@/utils'
 import type { SortOrder } from '@/types'
@@ -18,8 +18,6 @@ export const TicketsListPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'date' | 'createdAt' | 'updatedAt' | 'total'>('date')
   const [order, setOrder] = useState<SortOrder>('desc')
-  const [paymentTypeFilter, setPaymentTypeFilter] = useState<string>('')
-  const [printedFilter, setPrintedFilter] = useState<boolean | undefined>(undefined)
   const [dateRange, setDateRange] = useState<[string | undefined, string | undefined]>([
     undefined,
     undefined,
@@ -29,7 +27,7 @@ export const TicketsListPage = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, sortBy, order, paymentTypeFilter, printedFilter, dateRange])
+  }, [debouncedSearchTerm, sortBy, order, dateRange])
 
   const {
     data: ticketsResponse,
@@ -41,13 +39,10 @@ export const TicketsListPage = () => {
     search: debouncedSearchTerm || undefined,
     sortBy,
     order,
-    paymentType: paymentTypeFilter || undefined,
-    printed: printedFilter,
     startDate: dateRange[0],
     endDate: dateRange[1],
   })
 
-  const updateMutation = useUpdateTicket()
   const deleteMutation = useDeleteTicket()
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,16 +97,8 @@ export const TicketsListPage = () => {
         title: 'Impreso',
         dataIndex: 'printed',
         key: 'printed',
-        render: (printed: boolean, record: TicketTableRecord) => (
-          <Switch
-            checked={printed}
-            onChange={(checked) =>
-              updateMutation.mutate({
-                id: record.id,
-                dto: { printed: checked },
-              })
-            }
-          />
+        render: (printed: boolean) => (
+          <Tag color={printed ? 'green' : 'red'}>{printed ? 'Sí' : 'No'}</Tag>
         ),
       },
       {
@@ -155,7 +142,7 @@ export const TicketsListPage = () => {
         ),
       },
     ],
-    [updateMutation, deleteMutation],
+    [deleteMutation],
   )
 
   if (error) {
@@ -175,36 +162,6 @@ export const TicketsListPage = () => {
           onClear={handleSearchClear}
           className="max-w-md"
         />
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Tipo de pago:</span>
-          <Select
-            value={paymentTypeFilter}
-            onChange={setPaymentTypeFilter}
-            placeholder="Todos"
-            allowClear
-            className="min-w-32"
-            options={[
-              { label: 'Efectivo', value: 'Efectivo' },
-              { label: 'Tarjeta', value: 'Tarjeta' },
-              { label: 'Transferencia', value: 'Transferencia' },
-            ]}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Impreso:</span>
-          <Select
-            value={printedFilter === undefined ? '' : printedFilter ? 'true' : 'false'}
-            onChange={(value) => setPrintedFilter(value === '' ? undefined : value === 'true')}
-            className="min-w-32"
-            options={[
-              { label: 'Todos', value: '' },
-              { label: 'Sí', value: 'true' },
-              { label: 'No', value: 'false' },
-            ]}
-          />
-        </div>
 
         <RangePicker
           onChange={handleDateRangeChange}
