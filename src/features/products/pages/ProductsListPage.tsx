@@ -1,7 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Button, Input, Popconfirm, Table, Tag, Select } from 'antd'
-import { SearchOutlined } from '@ant-design/icons'
-import type { ColumnsType } from 'antd/es/table'
+import { Table } from 'antd'
 import {
   useCategories,
   useCreateProduct,
@@ -12,11 +10,12 @@ import {
   useUpdateProduct,
 } from '../queries'
 import { ProductFormModal } from '../components/ProductFormModal'
+import { ProductFilters } from '../components/ProductFilters'
+import { createProductColumns } from '../components/ProductTableColumns'
 import type { ProductResponse, CreateProductDto } from '../types'
-import { dateFormat, useDebounce } from '@/utils'
+import { useDebounce } from '@/utils'
 import type { SortOrder } from '@/types'
 
-type Option = { id: number; name: string }
 type TableRecord = ProductResponse
 
 export const ProductsListPage = () => {
@@ -57,150 +56,49 @@ export const ProductsListPage = () => {
 
   const options = useMemo(
     () => ({
-      units: (unitsRaw || []) as Option[],
-      categories: (categoriesRaw || []) as Option[],
-      cuts: (cutsRaw || []) as Option[],
+      units: unitsRaw || [],
+      categories: categoriesRaw || [],
+      cuts: cutsRaw || [],
     }),
     [unitsRaw, categoriesRaw, cutsRaw],
   )
 
-  const columns: ColumnsType<TableRecord> = useMemo(
-    () => [
-      { title: 'Nombre', dataIndex: 'name', key: 'name' },
-      { title: 'SKU', dataIndex: 'sku', key: 'sku', render: (sku: string) => sku || '-' },
-      {
-        title: 'Categoría',
-        dataIndex: 'categories',
-        key: 'categories',
-        render: (categories: { categoryId: number }[]) => {
-          if (!categories || categories.length === 0) return '-'
-          const categoryNames = categories
-            .map((cat) => options.categories.find((c) => c.id === cat.categoryId)?.name)
-            .filter(Boolean)
-            .join(', ')
-          return categoryNames || '-'
+  const columns = useMemo(
+    () =>
+      createProductColumns({
+        options,
+        onEdit: (record) => {
+          setMode('edit')
+          setEditing(record)
+          setOpen(true)
         },
-      },
-      {
-        title: 'Unidad Base',
-        dataIndex: 'baseUnitId',
-        key: 'baseUnitId',
-        render: (id: number) => options.units.find((u) => u.id === id)?.name || '-',
-      },
-      {
-        title: 'Estado',
-        dataIndex: 'isActive',
-        key: 'isActive',
-        render: (v: boolean) =>
-          v ? <Tag color="green">Activo</Tag> : <Tag color="red">Inactivo</Tag>,
-      },
-      {
-        title: 'Creado',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-        render: (d?: string) => (d ? dateFormat(d) : ''),
-      },
-      {
-        title: 'Actualizado',
-        dataIndex: 'updatedAt',
-        key: 'updatedAt',
-        render: (d?: string) => (d ? dateFormat(d) : ''),
-      },
-      {
-        title: 'Acciones',
-        key: 'actions',
-        render: (_: unknown, record: TableRecord) => (
-          <div className="flex items-center gap-2">
-            <Button
-              size="small"
-              onClick={() => {
-                setMode('edit')
-                setEditing(record)
-                setOpen(true)
-              }}
-            >
-              Editar
-            </Button>
-            <Popconfirm
-              title="Eliminar producto"
-              description="¿Estás seguro de que quieres eliminar este producto?"
-              okButtonProps={{ danger: true }}
-              onConfirm={() =>
-                deleteMutation.mutate(record.id, {
-                  onSuccess: () => setCurrentPage(1), // Reset to first page after deleting
-                })
-              }
-            >
-              <Button danger size="small">
-                Eliminar
-              </Button>
-            </Popconfirm>
-          </div>
-        ),
-      },
-    ],
+        onDelete: (id) =>
+          deleteMutation.mutate(id, {
+            onSuccess: () => setCurrentPage(1),
+          }),
+      }),
     [options, deleteMutation],
   )
 
   if (error) return <div>Error: {error instanceof Error ? error.message : 'Error al cargar'}</div>
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
-  }
-
-  const handleSearchClear = () => {
-    setSearchTerm('')
+  const handleAddProduct = () => {
+    setMode('create')
+    setEditing(undefined)
+    setOpen(true)
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4 flex-wrap">
-        <Input
-          placeholder="Buscar por nombre o SKU..."
-          allowClear
-          prefix={<SearchOutlined />}
-          size="large"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          onClear={handleSearchClear}
-          className="max-w-md"
-        />
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Ordenar por:</span>
-          <Select
-            value={sortBy}
-            onChange={setSortBy}
-            options={[
-              { label: 'Fecha de creación', value: 'createdAt' },
-              { label: 'Fecha de actualización', value: 'updatedAt' },
-              { label: 'Nombre', value: 'name' },
-              { label: 'Estado', value: 'isActive' },
-            ]}
-            className="min-w-40"
-          />
-          <Select
-            value={order}
-            onChange={setOrder}
-            options={[
-              { label: 'Ascendente', value: 'asc' },
-              { label: 'Descendente', value: 'desc' },
-            ]}
-            className="min-w-32"
-          />
-        </div>
-        <Button
-          type="primary"
-          onClick={() => {
-            setMode('create')
-            setEditing(undefined)
-            setOpen(true)
-          }}
-          className="ml-auto"
-        >
-          Agregar Producto
-        </Button>
-      </div>
+      <ProductFilters
+        searchTerm={searchTerm}
+        sortBy={sortBy}
+        order={order}
+        onSearchChange={setSearchTerm}
+        onSortByChange={setSortBy}
+        onOrderChange={setOrder}
+        onAddProduct={handleAddProduct}
+      />
 
       <Table<TableRecord>
         rowKey="id"
