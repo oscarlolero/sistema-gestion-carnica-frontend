@@ -163,11 +163,7 @@ export const TicketsListPage = () => {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Tickets</h1>
-      </div>
-
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4 flex-wrap">
         <Input
           placeholder="Buscar por tipo de pago o producto..."

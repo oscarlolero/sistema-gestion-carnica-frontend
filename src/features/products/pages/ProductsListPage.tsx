@@ -153,21 +153,7 @@ export const ProductsListPage = () => {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Productos</h1>
-        <Button
-          type="primary"
-          onClick={() => {
-            setMode('create')
-            setEditing(undefined)
-            setOpen(true)
-          }}
-        >
-          Agregar Producto
-        </Button>
-      </div>
-
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4 flex-wrap">
         <Input
           placeholder="Buscar por nombre o SKU..."
@@ -203,6 +189,17 @@ export const ProductsListPage = () => {
             className="min-w-32"
           />
         </div>
+        <Button
+          type="primary"
+          onClick={() => {
+            setMode('create')
+            setEditing(undefined)
+            setOpen(true)
+          }}
+          className="ml-auto"
+        >
+          Agregar Producto
+        </Button>
       </div>
 
       <Table<TableRecord>
