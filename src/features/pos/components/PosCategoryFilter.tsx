@@ -1,3 +1,5 @@
+import { Button } from 'antd'
+
 type CategoryOption = {
   id: number | 'all'
   name: string
@@ -20,18 +22,18 @@ export const PosCategoryFilter = ({
         const isActive = category.id === activeCategory
 
         return (
-          <button
+          <Button
             key={category.id}
-            type="button"
+            type={isActive ? 'primary' : 'default'}
             onClick={() => onCategoryChange(category.id)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 shadow-sm border border-transparent hover:border-[#b22222]/20 focus:outline-none focus:ring-2 focus:ring-[#b22222]/30 ${
+            className={`rounded-full px-4 py-2 text-sm font-medium h-auto shadow-sm border ${
               isActive
-                ? 'bg-[#b22222] text-white shadow-[0_8px_16px_rgba(178,34,34,0.25)]'
-                : 'bg-white text-[#4A4A4A]'
+                ? 'bg-[#b22222] border-[#b22222] text-white shadow-[0_8px_16px_rgba(178,34,34,0.25)] hover:bg-[#921c1c] hover:border-[#921c1c] [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] [&.ant-btn-primary]:hover:border-[#921c1c]'
+                : 'bg-white border-transparent text-[#4A4A4A] hover:border-[#b22222]/20'
             }`}
           >
             {category.name}
-          </button>
+          </Button>
         )
       })}
     </div>

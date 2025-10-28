@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { CloseOutlined } from '@ant-design/icons'
-import { InputNumber } from 'antd'
+import { Button, InputNumber, Select } from 'antd'
 import type { ProductResponse } from '@/features/products/types'
 
 type PosProductCardProps = {
@@ -62,13 +62,12 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
   const price = getCurrentPrice()
 
   // Set default unit when pricing changes
-  const handleCutChange = (cutId: string) => {
-    const newCutId = cutId ? Number(cutId) : undefined
-    setSelectedCut(newCutId)
+  const handleCutChange = (cutId: number | undefined) => {
+    setSelectedCut(cutId)
 
     // Reset unit selection based on available pricing
-    const newPricing = newCutId
-      ? product.cuts?.find((c) => c.cutId === newCutId)
+    const newPricing = cutId
+      ? product.cuts?.find((c) => c.cutId === cutId)
       : { pricePerKg: product.pricePerKg, pricePerUnit: product.pricePerUnit }
 
     if (newPricing?.pricePerKg) {
@@ -102,8 +101,8 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
   }
 
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
-      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-[#fef9f4] to-[#f7f0e6]">
+    <div className="relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
+      <div className="relative h-40 overflow-hidden bg-linear-to-br from-[#fef9f4] to-[#f7f0e6]">
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
             <div className="text-4xl font-bold text-[#b22222]/20">{product.name.charAt(0)}</div>
@@ -132,18 +131,19 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
         {hasCuts && (
           <div className="space-y-2">
             <label className="text-xs font-medium text-[#8c8c8c]">Corte:</label>
-            <select
-              value={selectedCut ?? ''}
-              onChange={(e) => handleCutChange(e.target.value)}
-              className="w-full rounded-lg border border-[#e9d9cc] bg-white px-3 py-2 text-sm text-[#2d2d2d] focus:border-[#b22222] focus:outline-none focus:ring-2 focus:ring-[#b22222]/20"
-            >
-              <option value="">Sin corte específico</option>
-              {product.cuts?.map((cut) => (
-                <option key={cut.cutId} value={cut.cutId}>
-                  {cut.cut?.name ?? `Corte #${cut.cutId}`}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={selectedCut}
+              onChange={handleCutChange}
+              placeholder="Sin corte específico"
+              className="w-full"
+              options={[
+                { label: 'Sin corte específico', value: undefined },
+                ...(product.cuts?.map((cut) => ({
+                  label: cut.cut?.name ?? `Corte #${cut.cutId}`,
+                  value: cut.cutId,
+                })) ?? []),
+              ]}
+            />
           </div>
         )}
 
@@ -151,52 +151,44 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
           <div className="space-y-2">
             <label className="text-xs font-medium text-[#8c8c8c]">Vender por:</label>
             <div className="flex gap-2">
-              <button
-                type="button"
+              <Button
+                type={selectedUnit === 'kg' ? 'primary' : 'default'}
+                className="flex-1 border-[#e9d9cc] text-sm font-medium h-auto py-2 [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn]:border-[#e9d9cc] [&.ant-btn]:text-[#2d2d2d] hover:[&.ant-btn]:border-[#b22222]"
                 onClick={() => setSelectedUnit('kg')}
-                className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  selectedUnit === 'kg'
-                    ? 'border-[#b22222] bg-[#b22222] text-white'
-                    : 'border-[#e9d9cc] bg-white text-[#2d2d2d] hover:border-[#b22222]'
-                }`}
               >
                 Kilogramo
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                type={selectedUnit === 'pz' ? 'primary' : 'default'}
+                className="flex-1 border-[#e9d9cc] text-sm font-medium h-auto py-2 [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn]:border-[#e9d9cc] [&.ant-btn]:text-[#2d2d2d] hover:[&.ant-btn]:border-[#b22222]"
                 onClick={() => setSelectedUnit('pz')}
-                className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  selectedUnit === 'pz'
-                    ? 'border-[#b22222] bg-[#b22222] text-white'
-                    : 'border-[#e9d9cc] bg-white text-[#2d2d2d] hover:border-[#b22222]'
-                }`}
               >
                 Pieza
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
-        <div className={`mt-auto flex ${showQuantityInput ? 'gap-2' : ''}`}>
-          <button
-            type="button"
-            onClick={handleAdd}
+        <div className="mt-auto flex gap-2">
+          <Button
+            type="primary"
             disabled={!product.isActive}
-            className={`rounded-full bg-[#b22222] py-2 text-sm font-semibold text-white hover:bg-[#921c1c] disabled:cursor-not-allowed disabled:bg-gray-400 ${
-              showQuantityInput ? 'flex-1' : 'w-full'
+            onClick={handleAdd}
+            className={`bg-[#b22222] text-sm font-semibold hover:bg-[#921c1c] disabled:bg-gray-400 [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] ${
+              showQuantityInput ? 'flex-1' : 'flex-1'
             }`}
           >
-            <span>{showQuantityInput ? 'Agregar' : 'Agregar'}</span>
-          </button>
+            Agregar
+          </Button>
           {showQuantityInput && (
             <div className="flex items-center gap-2">
-              <button
-                type="button"
+              <Button
+                type="default"
+                icon={<CloseOutlined />}
                 onClick={handleCancelQuantity}
-                className="rounded-full bg-gray-400 p-2 w-8 h-8 flex items-center justify-center text-white transition-colors hover:bg-gray-500"
-              >
-                <CloseOutlined />
-              </button>
+                shape="circle"
+                className="bg-gray-400 border-none text-white hover:bg-gray-500 w-8 h-8 p-0 [&.ant-btn]:bg-gray-400 [&.ant-btn]:hover:bg-gray-500 [&.ant-btn]:border-none [&.ant-btn-circle]:w-8 [&.ant-btn-circle]:h-8 [&.ant-btn-circle]:min-w-8"
+              />
               <InputNumber
                 min={1}
                 step={1}

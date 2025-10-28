@@ -1,4 +1,12 @@
 import { useState } from 'react'
+import { Button, InputNumber } from 'antd'
+import {
+  CloseOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  FileTextOutlined,
+  EditOutlined,
+} from '@ant-design/icons'
 import type { CartItem, PaymentType } from '../types'
 import { paymentTypeLabels } from '../types'
 import { useCreateTicket } from '@/features/tickets/queries'
@@ -27,9 +35,31 @@ export const PosTicketSummary = ({
   onClearCart,
 }: PosTicketSummaryProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [tempQuantity, setTempQuantity] = useState<string>('')
   const createTicketMutation = useCreateTicket()
 
   const total = items.reduce((sum, item) => sum + item.subtotal, 0)
+
+  const handleQuantityClick = (item: CartItem) => {
+    setEditingItemId(item.id)
+    setTempQuantity(item.quantity.toString())
+  }
+
+  const handleQuantityChange = (value: string) => {
+    setTempQuantity(value)
+  }
+
+  const handleQuantityConfirm = () => {
+    if (editingItemId && tempQuantity) {
+      const quantity = parseFloat(tempQuantity)
+      if (!isNaN(quantity) && quantity > 0) {
+        onUpdateQuantity(editingItemId, quantity)
+      }
+    }
+    setEditingItemId(null)
+    setTempQuantity('')
+  }
 
   const handleFinalizeSale = async () => {
     if (items.length === 0) {
@@ -72,42 +102,7 @@ export const PosTicketSummary = ({
 
       {items.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center text-[#9c9c9c]">
-          <svg
-            className="h-16 w-16 text-[#e9d9cc]"
-            viewBox="0 0 48 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M8 12C8 10.3431 9.34315 9 11 9H37C38.6569 9 40 10.3431 40 12V39C40 40.6569 38.6569 42 37 42H11C9.34315 42 8 40.6569 8 39V12Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M16 9V6C16 4.89543 16.8954 4 18 4H30C31.1046 4 32 4.89543 32 6V9"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M14 21H34"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M14 29H27"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <FileTextOutlined className="text-6xl text-[#e9d9cc]" />
           <div>
             <p className="text-sm font-semibold">No hay productos agregados</p>
             <p className="text-sm">Agrega productos al ticket para comenzar</p>
@@ -128,41 +123,56 @@ export const PosTicketSummary = ({
                     {formatter.format(item.unitPrice)} / {item.unit}
                   </p>
                 </div>
-                <button
-                  type="button"
+                <Button
+                  type="text"
+                  shape="circle"
+                  size="small"
+                  icon={<CloseOutlined />}
                   onClick={() => onRemoveItem(item.id)}
-                  className="text-[#8c8c8c] hover:text-[#b22222] transition-colors"
+                  className="text-[#8c8c8c] hover:text-[#b22222] p-0 h-5 w-5 min-w-5 flex items-center justify-center"
                   title="Eliminar"
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                />
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
+                  <Button
+                    icon={<MinusOutlined />}
                     onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white border border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] transition-colors"
-                  >
-                    -
-                  </button>
-                  <span className="min-w-[3rem] text-center text-sm font-semibold text-[#2d2d2d]">
-                    {item.quantity} {item.unit}
-                  </span>
-                  <button
-                    type="button"
+                    size="small"
+                    shape="circle"
+                    className="h-4 w-4 bg-white border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#e9d9cc] p-0"
+                  />
+                  {editingItemId === item.id ? (
+                    <InputNumber
+                      value={tempQuantity}
+                      onChange={(value) => handleQuantityChange(value ?? '')}
+                      onPressEnter={handleQuantityConfirm}
+                      onBlur={handleQuantityConfirm}
+                      size="small"
+                      autoFocus
+                      className="w-20 text-center text-sm font-semibold"
+                      type="number"
+                      min="0"
+                      step="1"
+                    />
+                  ) : (
+                    <span
+                      onClick={() => handleQuantityClick(item)}
+                      className="flex items-center gap-1 min-w-10 text-center text-sm font-semibold text-[#2d2d2d] cursor-pointer hover:text-[#b22222] transition-colors"
+                    >
+                      <span>
+                        {item.quantity} {item.unit}
+                      </span>
+                      <EditOutlined className="text-[10px] opacity-60" />
+                    </span>
+                  )}
+                  <Button
+                    icon={<PlusOutlined size={16} />}
                     onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white border border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] transition-colors"
-                  >
-                    +
-                  </button>
+                    shape="circle"
+                    size="small"
+                    className="h-4 w-4 bg-white border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#e9d9cc] p-0"
+                  />
                 </div>
                 <span className="text-sm font-semibold text-[#b22222]">
                   {formatter.format(item.subtotal)}
@@ -178,18 +188,19 @@ export const PosTicketSummary = ({
           <label className="text-xs font-medium text-[#8c8c8c]">Método de pago:</label>
           <div className="grid grid-cols-3 gap-2">
             {(Object.keys(paymentTypeLabels) as PaymentType[]).map((type) => (
-              <button
+              <Button
                 key={type}
-                type="button"
+                size="small"
+                type={paymentType === type ? 'primary' : 'default'}
                 onClick={() => onPaymentTypeChange(type)}
-                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                className={`rounded-lg px-3 py-2 h-auto text-xs font-medium ${
                   paymentType === type
-                    ? 'bg-[#b22222] text-white'
-                    : 'bg-white border border-[#e9d9cc] text-[#4a4a4a] hover:border-[#b22222]/20'
+                    ? 'bg-[#b22222] border-[#b22222] text-white hover:bg-[#921c1c] hover:border-[#921c1c] [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] [&.ant-btn-primary]:hover:border-[#921c1c]'
+                    : 'bg-white border-[#e9d9cc] text-[#4a4a4a] hover:border-[#b22222]/20'
                 }`}
               >
                 {paymentTypeLabels[type]}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -199,22 +210,22 @@ export const PosTicketSummary = ({
           <span className="text-lg font-semibold text-[#b22222]">{formatter.format(total)}</span>
         </div>
 
-        <button
-          type="button"
+        <Button
+          type="primary"
           onClick={handleFinalizeSale}
           disabled={items.length === 0 || isProcessing}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#b22222] py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#921c1c] disabled:cursor-not-allowed disabled:bg-gray-400"
+          className="w-full rounded-full bg-[#b22222] py-3 h-auto text-sm font-semibold text-white hover:bg-[#921c1c] disabled:bg-gray-400 disabled:cursor-not-allowed [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] [&.ant-btn-primary]:disabled:bg-gray-400"
         >
           {isProcessing ? 'Procesando...' : 'Finalizar Venta'}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          type="default"
           onClick={onClearCart}
           disabled={items.length === 0}
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-transparent bg-[#f7f0e6] py-3 text-sm font-semibold text-[#b22222] transition-colors duration-200 hover:border-[#b22222]/20 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-full border-transparent bg-[#f7f0e6] py-3 h-auto text-sm font-semibold text-[#b22222] hover:border-[#b22222]/20 disabled:opacity-50 disabled:cursor-not-allowed [&.ant-btn]:bg-[#f7f0e6] [&.ant-btn]:border-transparent [&.ant-btn]:text-[#b22222]"
         >
           Cancelar Venta
-        </button>
+        </Button>
       </div>
     </aside>
   )
