@@ -1,12 +1,13 @@
 import {
   getTickets,
   getTicket,
+  createTicket,
   updateTicket,
   deleteTicket,
   type TicketListParams,
 } from '@/api/modules/tickets.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { UpdateTicketDto } from './types'
+import type { CreateTicketDto, UpdateTicketDto } from './types'
 
 const TICKETS_KEY = 'tickets'
 
@@ -21,6 +22,16 @@ export const useTicket = (id: number) =>
     queryKey: [TICKETS_KEY, id],
     queryFn: () => getTicket(id),
   })
+
+export const useCreateTicket = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (dto: CreateTicketDto) => createTicket(dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TICKETS_KEY] })
+    },
+  })
+}
 
 export const useUpdateTicket = () => {
   const queryClient = useQueryClient()

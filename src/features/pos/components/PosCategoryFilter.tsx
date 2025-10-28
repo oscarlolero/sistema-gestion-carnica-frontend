@@ -1,9 +1,12 @@
-import type { PosCategory } from '../constants/mockData'
+type CategoryOption = {
+  id: number | 'all'
+  name: string
+}
 
 type PosCategoryFilterProps = {
-  categories: PosCategory[]
-  activeCategory: string
-  onCategoryChange: (categoryId: string) => void
+  categories: CategoryOption[]
+  activeCategory: number | 'all'
+  onCategoryChange: (categoryId: number | 'all') => void
 }
 
 export const PosCategoryFilter = ({
@@ -27,7 +30,7 @@ export const PosCategoryFilter = ({
                 : 'bg-white text-[#4A4A4A]'
             }`}
           >
-            {category.label}
+            {category.name}
           </button>
         )
       })}

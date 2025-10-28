@@ -1,9 +1,9 @@
-import type { PosProduct } from '../constants/mockData'
+import type { ProductResponse } from '@/features/products/types'
 import { PosProductCard } from './PosProductCard'
 
 type PosProductGridProps = {
-  products: PosProduct[]
-  onAdd: (productId: string) => void
+  products: ProductResponse[]
+  onAdd: (product: ProductResponse, cutId?: number) => void
 }
 
 export const PosProductGrid = ({ products, onAdd }: PosProductGridProps) => {

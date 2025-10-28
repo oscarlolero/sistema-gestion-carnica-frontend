@@ -1,5 +1,5 @@
 import { client } from '../client'
-import type { TicketResponse, UpdateTicketDto } from '@/features/tickets/types'
+import type { TicketResponse, CreateTicketDto, UpdateTicketDto } from '@/features/tickets/types'
 import type { PaginatedResponse, SortOrder } from '@/types'
 
 export interface TicketListParams {
@@ -35,6 +35,11 @@ export const getTickets = async (
 
 export const getTicket = async (id: number): Promise<TicketResponse> => {
   const res = await client.get(`/tickets/${id}`)
+  return res.data
+}
+
+export const createTicket = async (data: CreateTicketDto): Promise<TicketResponse> => {
+  const res = await client.post('/tickets', data)
   return res.data
 }
 

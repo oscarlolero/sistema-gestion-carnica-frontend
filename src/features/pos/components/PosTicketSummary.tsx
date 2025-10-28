@@ -1,7 +1,16 @@
-import type { PosTicketItem } from '../constants/mockData'
+import { useState } from 'react'
+import type { CartItem, PaymentType } from '../types'
+import { paymentTypeLabels } from '../types'
+import { useCreateTicket } from '@/features/tickets/queries'
+import { message } from 'antd'
 
 type PosTicketSummaryProps = {
-  items: PosTicketItem[]
+  items: CartItem[]
+  paymentType: PaymentType
+  onPaymentTypeChange: (type: PaymentType) => void
+  onUpdateQuantity: (itemId: string, quantity: number) => void
+  onRemoveItem: (itemId: string) => void
+  onClearCart: () => void
 }
 
 const formatter = new Intl.NumberFormat('es-MX', {
@@ -9,8 +18,48 @@ const formatter = new Intl.NumberFormat('es-MX', {
   currency: 'USD',
 })
 
-export const PosTicketSummary = ({ items }: PosTicketSummaryProps) => {
-  const total = items.reduce((sum, item) => sum + item.price, 0)
+export const PosTicketSummary = ({
+  items,
+  paymentType,
+  onPaymentTypeChange,
+  onUpdateQuantity,
+  onRemoveItem,
+  onClearCart,
+}: PosTicketSummaryProps) => {
+  const [isProcessing, setIsProcessing] = useState(false)
+  const createTicketMutation = useCreateTicket()
+
+  const total = items.reduce((sum, item) => sum + item.subtotal, 0)
+
+  const handleFinalizeSale = async () => {
+    if (items.length === 0) {
+      message.error('No hay productos en el carrito')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      await createTicketMutation.mutateAsync({
+        total,
+        paymentType: paymentTypeLabels[paymentType],
+        items: items.map((item) => ({
+          productId: item.productId,
+          cutId: item.cutId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          subtotal: item.subtotal,
+        })),
+      })
+
+      message.success('Venta finalizada exitosamente')
+      onClearCart()
+    } catch (error) {
+      message.error('Error al finalizar la venta')
+      console.error('Error creating ticket:', error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   return (
     <aside className="flex h-full flex-col rounded-3xl bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
@@ -69,37 +118,100 @@ export const PosTicketSummary = ({ items }: PosTicketSummaryProps) => {
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-start justify-between rounded-2xl border border-[#f3e3d4] bg-[#fef9f4] p-4"
+              className="flex flex-col gap-3 rounded-2xl border border-[#f3e3d4] bg-[#fef9f4] p-4"
             >
-              <div>
-                <p className="text-sm font-semibold text-[#2d2d2d]">{item.name}</p>
-                <p className="text-xs text-[#8c8c8c]">
-                  {item.quantity} {item.unit}
-                </p>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[#2d2d2d]">{item.productName}</p>
+                  {item.cutName && <p className="text-xs text-[#b22222]">{item.cutName}</p>}
+                  <p className="text-xs text-[#8c8c8c]">
+                    {formatter.format(item.unitPrice)} / {item.unit}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onRemoveItem(item.id)}
+                  className="text-[#8c8c8c] hover:text-[#b22222] transition-colors"
+                  title="Eliminar"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </div>
-              <span className="text-sm font-semibold text-[#b22222]">
-                {formatter.format(item.price)}
-              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white border border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] transition-colors"
+                  >
+                    -
+                  </button>
+                  <span className="min-w-[3rem] text-center text-sm font-semibold text-[#2d2d2d]">
+                    {item.quantity} {item.unit}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white border border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+                <span className="text-sm font-semibold text-[#b22222]">
+                  {formatter.format(item.subtotal)}
+                </span>
+              </div>
             </div>
           ))}
         </div>
       )}
 
       <div className="mt-6 space-y-3">
-        <div className="flex items-center justify-between text-sm text-[#4a4a4a]">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-[#8c8c8c]">Método de pago:</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(paymentTypeLabels) as PaymentType[]).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => onPaymentTypeChange(type)}
+                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                  paymentType === type
+                    ? 'bg-[#b22222] text-white'
+                    : 'bg-white border border-[#e9d9cc] text-[#4a4a4a] hover:border-[#b22222]/20'
+                }`}
+              >
+                {paymentTypeLabels[type]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-[#e9d9cc] pt-3 text-sm text-[#4a4a4a]">
           <span>Total</span>
           <span className="text-lg font-semibold text-[#b22222]">{formatter.format(total)}</span>
         </div>
 
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#b22222] py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#921c1c]"
+          onClick={handleFinalizeSale}
+          disabled={items.length === 0 || isProcessing}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#b22222] py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#921c1c] disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          Finalizar Venta
+          {isProcessing ? 'Procesando...' : 'Finalizar Venta'}
         </button>
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-transparent bg-[#f7f0e6] py-3 text-sm font-semibold text-[#b22222] transition-colors duration-200 hover:border-[#b22222]/20"
+          onClick={onClearCart}
+          disabled={items.length === 0}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-transparent bg-[#f7f0e6] py-3 text-sm font-semibold text-[#b22222] transition-colors duration-200 hover:border-[#b22222]/20 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Cancelar Venta
         </button>

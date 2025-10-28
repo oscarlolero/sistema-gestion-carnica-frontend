@@ -30,6 +30,21 @@ export interface TicketResponse {
   } | null
 }
 
+export interface CreateTicketDto {
+  date?: string | Date
+  total: number
+  paymentType: string
+  userId?: number
+  printed?: boolean
+  items: Array<{
+    productId: number
+    cutId?: number
+    quantity: number
+    unitPrice: number
+    subtotal: number
+  }>
+}
+
 export interface UpdateTicketDto {
   date?: string | Date
   total?: number
