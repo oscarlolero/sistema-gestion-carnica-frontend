@@ -44,14 +44,20 @@ export const PosPage = () => {
   }, [activeCategory, search, productsData?.data])
 
   // Add product to cart
-  const handleAddToCart = (product: ProductResponse, cutId?: number) => {
+  const handleAddToCart = (product: ProductResponse, cutId?: number, unit?: 'kg' | 'ud') => {
     const cut = cutId ? product.cuts?.find((c) => c.cutId === cutId) : undefined
+
+    // Get price based on selected unit
+    const selectedUnit = unit ?? 'kg'
     const rawPrice = cut
-      ? (cut.pricePerKg ?? cut.pricePerUnit ?? 0)
-      : (product.pricePerKg ?? product.pricePerUnit ?? 0)
+      ? ((selectedUnit === 'kg' ? cut.pricePerKg : cut.pricePerUnit) ?? 0)
+      : ((selectedUnit === 'kg' ? product.pricePerKg : product.pricePerUnit) ?? 0)
     const unitPrice = typeof rawPrice === 'string' ? Number(rawPrice) : (rawPrice ?? 0)
 
-    const cartItemId = cutId ? `${product.id}-${cutId}` : `${product.id}`
+    // Create unique cart item ID including unit
+    const cartItemId = cutId
+      ? `${product.id}-${cutId}-${selectedUnit}`
+      : `${product.id}-${selectedUnit}`
 
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === cartItemId)
@@ -70,16 +76,18 @@ export const PosPage = () => {
       }
 
       // Add new item
+      const cutName = cutId ? (cut?.cut?.name ?? `Corte #${cutId}`) : undefined
+
       const newItem: CartItem = {
         id: cartItemId,
         productId: product.id,
         productName: product.name,
         cutId,
-        cutName: cutId ? `Corte #${cutId}` : undefined,
+        cutName,
         quantity: 1,
         unitPrice,
         subtotal: unitPrice,
-        unit: product.pricePerKg ? 'kg' : 'ud',
+        unit: selectedUnit,
       }
 
       return [...prevCart, newItem]

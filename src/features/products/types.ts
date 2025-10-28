@@ -26,6 +26,12 @@ export const productCutSchema = z
     cutId: z.number().int().positive('El corte debe ser un ID positivo'),
     pricePerKg: nonNegativeNumber.nullish(),
     pricePerUnit: nonNegativeNumber.nullish(),
+    cut: z
+      .object({
+        id: z.number(),
+        name: z.string(),
+      })
+      .optional(),
   })
   .refine(
     ({ pricePerKg, pricePerUnit }) =>

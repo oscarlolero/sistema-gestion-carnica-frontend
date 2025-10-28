@@ -1,5 +1,5 @@
 export interface CartItem {
-  id: string // Unique cart item ID (productId-cutId or just productId)
+  id: string // Unique cart item ID (productId-cutId-unit or productId-unit)
   productId: number
   productName: string
   cutId?: number
@@ -7,7 +7,7 @@ export interface CartItem {
   quantity: number
   unitPrice: number
   subtotal: number
-  unit: string
+  unit: 'kg' | 'ud' // Unit type: kg or unidad
 }
 
 export interface PosProduct {
