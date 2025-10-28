@@ -40,6 +40,7 @@ export const ProductsListPage = () => {
     search: debouncedSearchTerm || undefined,
     sortBy,
     order,
+    includeInactive: true,
   })
   const { data: categoriesRaw } = useCategories()
   const { data: cutsRaw } = useCuts()

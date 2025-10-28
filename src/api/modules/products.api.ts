@@ -9,14 +9,18 @@ import { PaginationWithSortParams } from '@/types'
 
 // GET /products
 export const getProducts = async (
-  params: PaginationWithSortParams & { search?: string } = { page: 1, limit: 10 },
+  params: PaginationWithSortParams & { search?: string; includeInactive?: boolean } = {
+    page: 1,
+    limit: 10,
+  },
 ): Promise<ProductListResponse> => {
-  const { page = 1, limit = 10, search, sortBy, order } = params
+  const { page = 1, limit = 10, search, sortBy, order, includeInactive } = params
   const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
   const sortParam = sortBy ? `&sortBy=${sortBy}` : ''
   const orderParam = order ? `&order=${order}` : ''
+  const includeInactiveParam = includeInactive ? `&includeInactive=true` : ''
   const res = await client.get(
-    `/products?select=categories,cuts&page=${page}&limit=${limit}${searchParam}${sortParam}${orderParam}`,
+    `/products?select=categories,cuts&page=${page}&limit=${limit}${searchParam}${sortParam}${orderParam}${includeInactiveParam}`,
   )
   return res.data
 }

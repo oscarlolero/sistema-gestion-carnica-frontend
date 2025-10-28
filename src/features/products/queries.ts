@@ -15,10 +15,21 @@ const CATEGORIES_KEY = 'categories'
 const CUTS_KEY = 'cuts'
 
 export const useProducts = (
-  params: PaginationWithSortParams & { search?: string } = { page: 1, limit: 10 },
+  params: PaginationWithSortParams & { search?: string; includeInactive?: boolean } = {
+    page: 1,
+    limit: 10,
+  },
 ) =>
   useQuery({
-    queryKey: [PRODUCTS_KEY, params.page, params.limit, params.search, params.sortBy, params.order],
+    queryKey: [
+      PRODUCTS_KEY,
+      params.page,
+      params.limit,
+      params.search,
+      params.sortBy,
+      params.order,
+      params.includeInactive,
+    ],
     queryFn: () => getProducts(params),
   })
 
