@@ -103,11 +103,15 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
   return (
     <div className="relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
       <div className="relative h-40 overflow-hidden bg-linear-to-br from-[#fef9f4] to-[#f7f0e6]">
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-[#b22222]/20">{product.name.charAt(0)}</div>
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-[#b22222]/20">{product.name.charAt(0)}</div>
+            </div>
           </div>
-        </div>
+        )}
         {!product.isActive && (
           <span className="absolute right-3 top-3 rounded-full bg-gray-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
             Inactivo

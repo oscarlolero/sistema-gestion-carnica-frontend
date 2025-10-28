@@ -13,7 +13,9 @@ import {
   DollarOutlined,
   SettingOutlined,
   FileTextOutlined,
+  PictureOutlined,
 } from '@ant-design/icons'
+import { CloudinaryUploadWidget } from '@/components/CloudinaryUploadWidget'
 
 export type ProductFormOptions = {
   categories: { id: number; name: string }[]
@@ -23,6 +25,7 @@ export type ProductFormOptions = {
 type Props = {
   defaultValues?: Partial<Product>
   onSubmit: (values: CreateProductDto) => void
+  onCancel?: () => void
   isSubmitting?: boolean
   options: ProductFormOptions
 }
@@ -35,6 +38,7 @@ const fallbackDefaults: ProductFormValues = {
   description: null,
   sku: null,
   barcode: null,
+  imageUrl: null,
   pricePerKg: null,
   pricePerUnit: null,
   isActive: true,
@@ -42,7 +46,13 @@ const fallbackDefaults: ProductFormValues = {
   cuts: [],
 }
 
-export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: Props) => {
+export const ProductForm = ({
+  defaultValues,
+  onSubmit,
+  onCancel,
+  isSubmitting,
+  options,
+}: Props) => {
   const {
     control,
     handleSubmit,
@@ -170,6 +180,26 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
               <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
                 <span className="text-red-400">⚠</span>
                 {errors.barcode.message as string}
+              </div>
+            )}
+          </div>
+
+          <div className="lg:col-span-2 flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <PictureOutlined className="text-gray-400" />
+              Imagen del Producto
+            </label>
+            <Controller
+              control={control}
+              name="imageUrl"
+              render={({ field }) => (
+                <CloudinaryUploadWidget value={field.value} onChange={field.onChange} />
+              )}
+            />
+            {errors.imageUrl && (
+              <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                <span className="text-red-400">⚠</span>
+                {errors.imageUrl.message as string}
               </div>
             )}
           </div>
@@ -399,12 +429,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
 
       {/* Botones de Acción */}
       <div className="flex justify-end gap-3 pt-4">
-        <Button
-          htmlType="button"
-          onClick={() => window.history.back()}
-          size="large"
-          className="px-6"
-        >
+        <Button htmlType="button" onClick={onCancel} size="large" className="px-6">
           Cancelar
         </Button>
         <Button

@@ -34,6 +34,7 @@ export const ProductFormModal = ({
       <ProductForm
         defaultValues={initialProduct}
         onSubmit={onSubmit}
+        onCancel={onClose}
         isSubmitting={isSubmitting}
         options={options}
       />

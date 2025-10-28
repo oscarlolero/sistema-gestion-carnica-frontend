@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.22.0",
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-query": "^5.90.5",

@@ -68,6 +68,7 @@ export const productSchema = z
       .min(1, 'El código de barras no puede estar vacío')
       .max(128, 'El código de barras no debe exceder 128 caracteres')
       .nullish(),
+    imageUrl: z.string().url('Debe ser una URL válida').nullish(),
     pricePerKg: nonNegativeNumber.nullish(),
     pricePerUnit: nonNegativeNumber.nullish(),
     isActive: z.boolean().default(true),

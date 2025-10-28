@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Tag } from 'antd'
+import { Button, Popconfirm, Tag, Image } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { ProductResponse } from '../types'
 import { dateFormat } from '@/utils'
@@ -20,6 +20,42 @@ export const createProductColumns = ({
   onEdit,
   onDelete,
 }: ProductTableColumnsProps): ColumnsType<TableRecord> => [
+  {
+    title: 'Imagen',
+    dataIndex: 'imageUrl',
+    key: 'imageUrl',
+    width: 80,
+    render: (imageUrl: string, record: TableRecord) => {
+      if (!imageUrl) {
+        return (
+          <div className="flex h-[50px] w-[50px] items-center justify-center rounded bg-gray-100 text-gray-400">
+            <span className="text-xs">Sin imagen</span>
+          </div>
+        )
+      }
+
+      // Generate thumbnail URL with Cloudinary transformations
+      const getThumbnailUrl = (url: string) => {
+        if (!url.includes('cloudinary.com')) return url
+
+        // Insert transformation parameters before /upload/
+        return url.replace('/upload/', '/upload/c_thumb,w_50,h_50,g_face,f_auto,q_auto/')
+      }
+
+      const thumbnailUrl = getThumbnailUrl(imageUrl)
+
+      return (
+        <Image
+          src={thumbnailUrl}
+          alt={record.name}
+          width={50}
+          height={50}
+          style={{ objectFit: 'cover', borderRadius: '4px' }}
+          preview={{ src: imageUrl, mask: 'Ver' }}
+        />
+      )
+    },
+  },
   { title: 'Nombre', dataIndex: 'name', key: 'name' },
   { title: 'SKU', dataIndex: 'sku', key: 'sku', render: (sku: string) => sku || '-' },
   {
