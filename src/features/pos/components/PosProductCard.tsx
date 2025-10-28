@@ -1,26 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { CloseOutlined } from '@ant-design/icons'
+import { InputNumber } from 'antd'
 import type { ProductResponse } from '@/features/products/types'
 
 type PosProductCardProps = {
   product: ProductResponse
-  onAdd: (product: ProductResponse, cutId?: number, unit?: 'kg' | 'ud') => void
+  onAdd: (product: ProductResponse, cutId?: number, unit?: 'kg' | 'pz', quantity?: number) => void
 }
 
 export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
   // Initialize unit based on available pricing from base product
-  const getInitialUnit = (): 'kg' | 'ud' => {
+  const getInitialUnit = (): 'kg' | 'pz' => {
     const hasKg = product.pricePerKg !== null && product.pricePerKg !== undefined
     const hasUnit = product.pricePerUnit !== null && product.pricePerUnit !== undefined
 
     if (hasKg && hasUnit) return 'kg' // default to kg if both available
-    if (hasUnit) return 'ud' // prefer unit if only unit price exists
+    if (hasUnit) return 'pz' // prefer unit if only unit price exists
     if (hasKg) return 'kg'
-    return 'ud' // fallback
+    return 'pz' // fallback
   }
 
   const [selectedCut, setSelectedCut] = useState<number | undefined>(undefined)
-  const [selectedUnit, setSelectedUnit] = useState<'kg' | 'ud'>(getInitialUnit())
+  const [selectedUnit, setSelectedUnit] = useState<'kg' | 'pz'>(getInitialUnit())
+  const [showQuantityInput, setShowQuantityInput] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   const hasCuts = product.cuts && product.cuts.length > 0
+
+  // Reset quantity input when changing cut or unit
+  useEffect(() => {
+    setShowQuantityInput(false)
+    setQuantity(1)
+  }, [selectedCut, selectedUnit])
 
   // Get available pricing options based on selected cut or base product
   const getAvailablePricing = () => {
@@ -64,12 +74,31 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
     if (newPricing?.pricePerKg) {
       setSelectedUnit('kg')
     } else if (newPricing?.pricePerUnit) {
-      setSelectedUnit('ud')
+      setSelectedUnit('pz')
     }
   }
 
   const handleAdd = () => {
-    onAdd(product, hasCuts ? selectedCut : undefined, selectedUnit)
+    if (!showQuantityInput) {
+      setShowQuantityInput(true)
+    } else {
+      if (quantity > 0) {
+        onAdd(product, hasCuts ? selectedCut : undefined, selectedUnit, quantity)
+        setShowQuantityInput(false)
+        setQuantity(1)
+      }
+    }
+  }
+
+  const handleQuantityChange = (value: number | null) => {
+    if (value !== null && value > 0) {
+      setQuantity(value)
+    }
+  }
+
+  const handleCancelQuantity = () => {
+    setShowQuantityInput(false)
+    setQuantity(1)
   }
 
   return (
@@ -92,7 +121,7 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
           <div className="flex-1">
             <h3 className="text-base font-semibold text-[#2d2d2d]">{product.name}</h3>
             <p className="text-sm text-[#8c8c8c]">
-              {selectedUnit === 'kg' ? 'Por kg' : 'Por unidad'}
+              {selectedUnit === 'kg' ? 'Por kg' : 'Por pieza'}
             </p>
           </div>
           <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-sm font-semibold text-[#b22222]">
@@ -135,27 +164,51 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
               </button>
               <button
                 type="button"
-                onClick={() => setSelectedUnit('ud')}
+                onClick={() => setSelectedUnit('pz')}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  selectedUnit === 'ud'
+                  selectedUnit === 'pz'
                     ? 'border-[#b22222] bg-[#b22222] text-white'
                     : 'border-[#e9d9cc] bg-white text-[#2d2d2d] hover:border-[#b22222]'
                 }`}
               >
-                Unidad
+                Pieza
               </button>
             </div>
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={handleAdd}
-          disabled={!product.isActive}
-          className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#b22222] py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#921c1c] disabled:cursor-not-allowed disabled:bg-gray-400"
-        >
-          <span>Agregar</span>
-        </button>
+        <div className={`mt-auto flex ${showQuantityInput ? 'gap-2' : ''}`}>
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!product.isActive}
+            className={`rounded-full bg-[#b22222] py-2 text-sm font-semibold text-white hover:bg-[#921c1c] disabled:cursor-not-allowed disabled:bg-gray-400 ${
+              showQuantityInput ? 'flex-1' : 'w-full'
+            }`}
+          >
+            <span>{showQuantityInput ? 'Agregar' : 'Agregar'}</span>
+          </button>
+          {showQuantityInput && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCancelQuantity}
+                className="rounded-full bg-gray-400 p-2 w-8 h-8 flex items-center justify-center text-white transition-colors hover:bg-gray-500"
+              >
+                <CloseOutlined />
+              </button>
+              <InputNumber
+                min={1}
+                step={1}
+                value={quantity}
+                onChange={handleQuantityChange}
+                onPressEnter={handleAdd}
+                autoFocus
+                className="w-20 [&_.ant-input]:text-center [&_.ant-input]:font-semibold"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

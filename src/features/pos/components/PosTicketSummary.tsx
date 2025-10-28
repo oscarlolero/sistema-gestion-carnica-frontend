@@ -15,7 +15,7 @@ type PosTicketSummaryProps = {
 
 const formatter = new Intl.NumberFormat('es-MX', {
   style: 'currency',
-  currency: 'USD',
+  currency: 'MXN',
 })
 
 export const PosTicketSummary = ({

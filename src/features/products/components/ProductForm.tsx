@@ -267,7 +267,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                     <InputNumber
                       {...field}
                       min={0}
-                      step={0.01}
+                      step={1}
                       size="large"
                       className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
                       placeholder="0.00"
@@ -296,7 +296,7 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
                     <InputNumber
                       {...field}
                       min={0}
-                      step={0.01}
+                      step={1}
                       size="large"
                       className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
                       placeholder="0.00"

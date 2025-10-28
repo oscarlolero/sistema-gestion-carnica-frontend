@@ -44,7 +44,12 @@ export const PosPage = () => {
   }, [activeCategory, search, productsData?.data])
 
   // Add product to cart
-  const handleAddToCart = (product: ProductResponse, cutId?: number, unit?: 'kg' | 'ud') => {
+  const handleAddToCart = (
+    product: ProductResponse,
+    cutId?: number,
+    unit?: 'kg' | 'pz',
+    quantityToAdd?: number,
+  ) => {
     const cut = cutId ? product.cuts?.find((c) => c.cutId === cutId) : undefined
 
     // Get price based on selected unit
@@ -59,17 +64,19 @@ export const PosPage = () => {
       ? `${product.id}-${cutId}-${selectedUnit}`
       : `${product.id}-${selectedUnit}`
 
+    const addQuantity = quantityToAdd ?? 1
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === cartItemId)
 
       if (existingItem) {
-        // Increment quantity
+        // Add quantity
         return prevCart.map((item) =>
           item.id === cartItemId
             ? {
                 ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.unitPrice,
+                quantity: item.quantity + addQuantity,
+                subtotal: (item.quantity + addQuantity) * item.unitPrice,
               }
             : item,
         )
@@ -84,9 +91,9 @@ export const PosPage = () => {
         productName: product.name,
         cutId,
         cutName,
-        quantity: 1,
+        quantity: addQuantity,
         unitPrice,
-        subtotal: unitPrice,
+        subtotal: addQuantity * unitPrice,
         unit: selectedUnit,
       }
 

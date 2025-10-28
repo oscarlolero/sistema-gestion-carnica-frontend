@@ -7,7 +7,7 @@ export interface CartItem {
   quantity: number
   unitPrice: number
   subtotal: number
-  unit: 'kg' | 'ud' // Unit type: kg or unidad
+  unit: 'kg' | 'pz' // Unit type: kg or pieza
 }
 
 export interface PosProduct {
