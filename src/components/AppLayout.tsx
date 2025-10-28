@@ -36,6 +36,11 @@ export const AppLayout = () => {
         icon: <AppstoreOutlined />,
       },
       {
+        key: '/pos',
+        label: 'POS',
+        icon: <AppstoreOutlined />,
+      },
+      {
         key: '/tickets',
         label: 'Tickets',
         icon: <FileTextOutlined />,
