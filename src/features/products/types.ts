@@ -71,10 +71,6 @@ export const productSchema = z
     pricePerKg: nonNegativeNumber.nullish(),
     pricePerUnit: nonNegativeNumber.nullish(),
     isActive: z.boolean().default(true),
-    baseUnitId: z
-      .number()
-      .int('La unidad base debe ser un número entero')
-      .positive('La unidad base debe ser un ID positivo'),
     categories: z.array(productCategorySchema).optional(),
     cuts: z.array(productCutSchema).optional(),
   })

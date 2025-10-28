@@ -3,7 +3,6 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  getUnits,
   getCategories,
   getProductCuts,
 } from '@/api/modules/products.api'
@@ -12,7 +11,6 @@ import type { CreateProductDto, UpdateProductDto } from './types'
 import type { PaginationWithSortParams } from '@/types'
 
 const PRODUCTS_KEY = 'products'
-const UNITS_KEY = 'units'
 const CATEGORIES_KEY = 'categories'
 const CUTS_KEY = 'cuts'
 
@@ -53,13 +51,6 @@ export const useDeleteProduct = () => {
     },
   })
 }
-
-export const useUnits = () =>
-  useQuery({
-    queryKey: [UNITS_KEY],
-    queryFn: getUnits,
-    staleTime: 1000 * 60 * 60,
-  })
 
 export const useCategories = () =>
   useQuery({

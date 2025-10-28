@@ -53,9 +53,3 @@ export const getCategories = async () => {
   const res = await client.get('/products/categories')
   return res.data
 }
-
-// GET /products/units
-export const getUnits = async () => {
-  const res = await client.get('/products/units')
-  return res.data
-}

@@ -6,7 +6,6 @@ import {
   useCuts,
   useDeleteProduct,
   useProducts,
-  useUnits,
   useUpdateProduct,
 } from '../queries'
 import { ProductFormModal } from '../components/ProductFormModal'
@@ -42,7 +41,6 @@ export const ProductsListPage = () => {
     sortBy,
     order,
   })
-  const { data: unitsRaw } = useUnits()
   const { data: categoriesRaw } = useCategories()
   const { data: cutsRaw } = useCuts()
 
@@ -56,11 +54,10 @@ export const ProductsListPage = () => {
 
   const options = useMemo(
     () => ({
-      units: unitsRaw || [],
       categories: categoriesRaw || [],
       cuts: cutsRaw || [],
     }),
-    [unitsRaw, categoriesRaw, cutsRaw],
+    [categoriesRaw, cutsRaw],
   )
 
   const columns = useMemo(

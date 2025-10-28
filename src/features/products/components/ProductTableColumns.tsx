@@ -8,7 +8,6 @@ type TableRecord = ProductResponse
 
 interface ProductTableColumnsProps {
   options: {
-    units: Option[]
     categories: Option[]
     cuts: Option[]
   }
@@ -35,12 +34,6 @@ export const createProductColumns = ({
         .join(', ')
       return categoryNames || '-'
     },
-  },
-  {
-    title: 'Unidad Base',
-    dataIndex: 'baseUnitId',
-    key: 'baseUnitId',
-    render: (id: number) => options.units.find((u) => u.id === id)?.name || '-',
   },
   {
     title: 'Estado',

@@ -16,7 +16,6 @@ import {
 } from '@ant-design/icons'
 
 export type ProductFormOptions = {
-  units: { id: number; name: string }[]
   categories: { id: number; name: string }[]
   cuts: { id: number; name: string }[]
 }
@@ -39,7 +38,6 @@ const fallbackDefaults: ProductFormValues = {
   pricePerKg: null,
   pricePerUnit: null,
   isActive: true,
-  baseUnitId: 0,
   categories: [],
   cuts: [],
 }
@@ -172,34 +170,6 @@ export const ProductForm = ({ defaultValues, onSubmit, isSubmitting, options }: 
               <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
                 <span className="text-red-400">⚠</span>
                 {errors.barcode.message as string}
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <SettingOutlined className="text-gray-400" />
-              Unidad Base
-              <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="baseUnitId"
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  size="large"
-                  className="w-full"
-                  placeholder="Selecciona la unidad base"
-                  options={options.units.map((u) => ({ value: u.id, label: u.name }))}
-                  value={field.value || undefined}
-                />
-              )}
-            />
-            {errors.baseUnitId && (
-              <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                <span className="text-red-400">⚠</span>
-                {errors.baseUnitId.message as string}
               </div>
             )}
           </div>

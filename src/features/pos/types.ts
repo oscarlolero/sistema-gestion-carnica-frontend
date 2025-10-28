@@ -15,11 +15,6 @@ export interface PosProduct {
   name: string
   pricePerKg: number | null
   pricePerUnit: number | null
-  baseUnit: {
-    id: number
-    name: string
-    abbreviation: string
-  }
   categories: Array<{
     id: number
     name: string
