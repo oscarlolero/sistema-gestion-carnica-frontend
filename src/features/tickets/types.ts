@@ -61,3 +61,16 @@ export interface UpdateTicketDto {
     subtotal: number
   }>
 }
+
+export interface DailySummaryResponse {
+  date: string
+  totalSales: number
+  totalTickets: number
+  items: Array<{
+    productName: string
+    cutName: string | null
+    quantity: number
+    unit: string
+    totalAmount: number
+  }>
+}

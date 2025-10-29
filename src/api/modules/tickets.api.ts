@@ -1,5 +1,10 @@
 import { client } from '../client'
-import type { TicketResponse, CreateTicketDto, UpdateTicketDto } from '@/features/tickets/types'
+import type {
+  TicketResponse,
+  CreateTicketDto,
+  UpdateTicketDto,
+  DailySummaryResponse,
+} from '@/features/tickets/types'
 import type { PaginatedResponse, SortOrder } from '@/types'
 
 export interface TicketListParams {
@@ -50,5 +55,11 @@ export const updateTicket = async (id: number, data: UpdateTicketDto): Promise<T
 
 export const deleteTicket = async (id: number): Promise<TicketResponse> => {
   const res = await client.delete(`/tickets/${id}`)
+  return res.data
+}
+
+export const getDailySummary = async (date?: string): Promise<DailySummaryResponse> => {
+  const dateParam = date ? `?date=${encodeURIComponent(date)}` : ''
+  const res = await client.get(`/tickets/summary/daily${dateParam}`)
   return res.data
 }

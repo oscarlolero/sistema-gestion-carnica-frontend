@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Table } from 'antd'
+import { Table, Button } from 'antd'
+import { BarChartOutlined } from '@ant-design/icons'
 import { useTickets, useDeleteTicket } from '../queries'
 import { TicketFilters } from '../components/TicketFilters'
 import { createTicketColumns } from '../components/TicketTableColumns'
 import { TicketExpandedRow } from '../components/TicketExpandedRow'
+import { DailySummaryModal } from '../components/DailySummaryModal'
 import type { TicketResponse } from '../types'
 import { useDebounce } from '@/utils'
 import type { SortOrder } from '@/types'
@@ -21,6 +23,7 @@ export const TicketsListPage = () => {
     undefined,
     undefined,
   ])
+  const [showDailySummary, setShowDailySummary] = useState(false)
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
@@ -69,15 +72,28 @@ export const TicketsListPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <TicketFilters
-        searchTerm={searchTerm}
-        sortBy={sortBy}
-        order={order}
-        onSearchChange={setSearchTerm}
-        onSortByChange={setSortBy}
-        onOrderChange={setOrder}
-        onDateRangeChange={handleDateRangeChange}
-      />
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <TicketFilters
+            searchTerm={searchTerm}
+            sortBy={sortBy}
+            order={order}
+            onSearchChange={setSearchTerm}
+            onSortByChange={setSortBy}
+            onOrderChange={setOrder}
+            onDateRangeChange={handleDateRangeChange}
+          />
+        </div>
+        <Button
+          type="primary"
+          size="large"
+          icon={<BarChartOutlined />}
+          onClick={() => setShowDailySummary(true)}
+          className="bg-[#B22222] hover:bg-[#8B1A1A] border-none shadow-md"
+        >
+          Resumen del Día
+        </Button>
+      </div>
 
       <Table<TicketTableRecord>
         rowKey="id"
@@ -103,6 +119,8 @@ export const TicketsListPage = () => {
           rowExpandable: () => true,
         }}
       />
+
+      <DailySummaryModal open={showDailySummary} onClose={() => setShowDailySummary(false)} />
     </div>
   )
 }

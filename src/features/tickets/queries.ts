@@ -4,6 +4,7 @@ import {
   createTicket,
   updateTicket,
   deleteTicket,
+  getDailySummary,
   type TicketListParams,
 } from '@/api/modules/tickets.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -52,3 +53,9 @@ export const useDeleteTicket = () => {
     },
   })
 }
+
+export const useDailySummary = (date?: string) =>
+  useQuery({
+    queryKey: ['daily-summary', date],
+    queryFn: () => getDailySummary(date),
+  })
