@@ -1,16 +1,20 @@
-import { useState } from 'react'
-import { Button, InputNumber } from 'antd'
+import { useState, useRef } from 'react'
+import { Button, InputNumber, Modal } from 'antd'
 import {
   CloseOutlined,
   MinusOutlined,
   PlusOutlined,
   FileTextOutlined,
   EditOutlined,
+  PrinterOutlined,
 } from '@ant-design/icons'
 import type { CartItem, PaymentType } from '../types'
 import { paymentTypeLabels } from '../types'
 import { useCreateTicket } from '@/features/tickets/queries'
 import { message } from 'antd'
+import { useReactToPrint } from 'react-to-print'
+import { PrintableTicket } from './PrintableTicket'
+import type { TicketResponse } from '@/features/tickets/types'
 
 type PosTicketSummaryProps = {
   items: CartItem[]
@@ -37,6 +41,9 @@ export const PosTicketSummary = ({
   const [isProcessing, setIsProcessing] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [tempQuantity, setTempQuantity] = useState<string>('')
+  const [showPrintDialog, setShowPrintDialog] = useState(false)
+  const [createdTicket, setCreatedTicket] = useState<TicketResponse | null>(null)
+  const printRef = useRef<HTMLDivElement>(null)
   const createTicketMutation = useCreateTicket()
 
   const total = items.reduce((sum, item) => sum + item.subtotal, 0)
@@ -61,6 +68,11 @@ export const PosTicketSummary = ({
     setTempQuantity('')
   }
 
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Ticket-${createdTicket?.id || 'preview'}`,
+  })
+
   const handleFinalizeSale = async () => {
     if (items.length === 0) {
       message.error('No hay productos en el carrito')
@@ -69,7 +81,7 @@ export const PosTicketSummary = ({
 
     setIsProcessing(true)
     try {
-      await createTicketMutation.mutateAsync({
+      const ticket = await createTicketMutation.mutateAsync({
         total,
         paymentType: paymentTypeLabels[paymentType],
         items: items.map((item) => ({
@@ -78,17 +90,32 @@ export const PosTicketSummary = ({
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           subtotal: item.subtotal,
+          unit: item.unit,
         })),
       })
 
+      setCreatedTicket(ticket)
+      setShowPrintDialog(true)
       message.success('Venta finalizada exitosamente')
-      onClearCart()
     } catch (error) {
       message.error('Error al finalizar la venta')
       console.error('Error creating ticket:', error)
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const handlePrintConfirm = () => {
+    handlePrint()
+    setShowPrintDialog(false)
+    onClearCart()
+    setCreatedTicket(null)
+  }
+
+  const handlePrintCancel = () => {
+    setShowPrintDialog(false)
+    onClearCart()
+    setCreatedTicket(null)
   }
 
   return (
@@ -227,6 +254,37 @@ export const PosTicketSummary = ({
           Cancelar Venta
         </Button>
       </div>
+
+      {/* Print Dialog */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <PrinterOutlined className="text-[#b22222]" />
+            <span>Imprimir Ticket</span>
+          </div>
+        }
+        open={showPrintDialog}
+        onOk={handlePrintConfirm}
+        onCancel={handlePrintCancel}
+        okText="Imprimir"
+        cancelText="No imprimir"
+        width={600}
+        centered
+        okButtonProps={{
+          className: 'bg-[#b22222] hover:bg-[#921c1c] border-[#b22222] hover:border-[#921c1c]',
+        }}
+      >
+        <div className="py-4">
+          <p className="mb-4 text-center text-[#4a4a4a]">
+            ¿Desea imprimir el ticket de esta venta?
+          </p>
+          {createdTicket && (
+            <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
+              <PrintableTicket ref={printRef} ticket={createdTicket} />
+            </div>
+          )}
+        </div>
+      </Modal>
     </aside>
   )
 }

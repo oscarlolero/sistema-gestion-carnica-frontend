@@ -14,6 +14,7 @@ export interface TicketResponse {
     quantity: number
     unitPrice: number
     subtotal: number
+    unit: 'kg' | 'pz'
     product: {
       id: number
       name: string
@@ -42,6 +43,7 @@ export interface CreateTicketDto {
     quantity: number
     unitPrice: number
     subtotal: number
+    unit: 'kg' | 'pz'
   }>
 }
 
