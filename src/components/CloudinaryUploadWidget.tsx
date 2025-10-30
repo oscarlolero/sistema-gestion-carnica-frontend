@@ -89,7 +89,7 @@ export const CloudinaryUploadWidget = ({
         maxFiles: 1,
         clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp', 'gif'],
         maxFileSize: 10000000,
-        folder: 'products',
+        folder: import.meta.env.VITE_CLOUDINARY_FOLDER,
       },
       (error, result) => {
         if (!error && result && result.event === 'success') {
