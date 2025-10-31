@@ -6,6 +6,7 @@ import {
   getCategories,
   getProductCuts,
 } from '@/api/modules/products.api'
+import { uploadImageToCloudinary } from '@/api/cloudinary'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CreateProductDto, UpdateProductDto } from './types'
 import type { PaginationWithSortParams } from '@/types'
@@ -36,7 +37,14 @@ export const useProducts = (
 export const useCreateProduct = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreateProductDto) => createProduct(dto),
+    mutationFn: async (dto: CreateProductDto) => {
+      // Si imageUrl es un File, subirlo primero a Cloudinary
+      if (dto.imageUrl instanceof File) {
+        const uploadedUrl = await uploadImageToCloudinary(dto.imageUrl)
+        return createProduct({ ...dto, imageUrl: uploadedUrl })
+      }
+      return createProduct(dto)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] })
     },
@@ -46,7 +54,14 @@ export const useCreateProduct = () => {
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: UpdateProductDto }) => updateProduct(id, dto),
+    mutationFn: async ({ id, dto }: { id: number; dto: UpdateProductDto }) => {
+      // Si imageUrl es un File, subirlo primero a Cloudinary
+      if (dto.imageUrl instanceof File) {
+        const uploadedUrl = await uploadImageToCloudinary(dto.imageUrl)
+        return updateProduct(id, { ...dto, imageUrl: uploadedUrl })
+      }
+      return updateProduct(id, dto)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] })
     },
