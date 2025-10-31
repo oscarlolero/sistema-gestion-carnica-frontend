@@ -1,39 +1,53 @@
-import { Input, Select, DatePicker } from 'antd'
-import { SearchOutlined } from '@ant-design/icons'
+import { Select, DatePicker } from 'antd'
 import type { SortOrder } from '@/types'
 import dayjs from 'dayjs'
+import { useProducts } from '@/features/products/queries'
 
 const { RangePicker } = DatePicker
 
 interface TicketFiltersProps {
-  searchTerm: string
+  selectedProducts: number[]
   sortBy: 'date' | 'createdAt' | 'updatedAt' | 'total'
   order: SortOrder
-  onSearchChange: (value: string) => void
+  onProductsChange: (value: number[]) => void
   onSortByChange: (value: 'date' | 'createdAt' | 'updatedAt' | 'total') => void
   onOrderChange: (value: SortOrder) => void
   onDateRangeChange: (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => void
 }
 
 export const TicketFilters = ({
-  searchTerm,
+  selectedProducts,
   sortBy,
   order,
-  onSearchChange,
+  onProductsChange,
   onSortByChange,
   onOrderChange,
   onDateRangeChange,
 }: TicketFiltersProps) => {
+  const { data: productsResponse, isLoading: isLoadingProducts } = useProducts({
+    page: 1,
+    limit: 1000,
+    includeInactive: false,
+  })
   return (
     <div className="flex items-center gap-4 flex-wrap">
-      <Input
-        placeholder="Buscar por tipo de pago o producto..."
+      <Select
+        mode="multiple"
+        placeholder="Filtrar por productos..."
         allowClear
-        prefix={<SearchOutlined />}
-        size="large"
-        value={searchTerm}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="max-w-md"
+        showSearch
+        value={selectedProducts}
+        onChange={onProductsChange}
+        loading={isLoadingProducts}
+        filterOption={(input, option) =>
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+        }
+        options={productsResponse?.data.map((product) => ({
+          label: product.name,
+          value: product.id,
+        }))}
+        className="max-w-md min-w-64"
+        maxTagCount="responsive"
       />
 
       <RangePicker

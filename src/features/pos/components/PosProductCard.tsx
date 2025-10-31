@@ -103,7 +103,7 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
   return (
     <div className="relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(0,0,0,0.08)]">
       <div className="relative h-40 overflow-hidden bg-linear-to-br from-[#fef9f4] to-[#f7f0e6]">
-        {product.imageUrl ? (
+        {product.imageUrl && typeof product.imageUrl === 'string' ? (
           <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center">

@@ -70,10 +70,7 @@ export const ProductsListPage = () => {
           setEditing(record)
           setOpen(true)
         },
-        onDelete: (id) =>
-          deleteMutation.mutate(id, {
-            onSuccess: () => setCurrentPage(1),
-          }),
+        onDelete: (id) => deleteMutation.mutate(id),
       }),
     [options, deleteMutation],
   )
@@ -129,7 +126,6 @@ export const ProductsListPage = () => {
         onSubmit={(values: CreateProductDto) => {
           const onSuccess = () => {
             setOpen(false)
-            setCurrentPage(1) // Reset to first page after creating/updating
           }
           if (mode === 'create') createMutation.mutate(values, { onSuccess })
           else if (editing) updateMutation.mutate({ id: editing.id, dto: values }, { onSuccess })

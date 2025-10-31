@@ -30,6 +30,7 @@ export const ProductFormModal = ({
       title={mode === 'create' ? 'Agregar producto' : 'Editar producto'}
       footer={null}
       width={700}
+      destroyOnHidden
     >
       <ProductForm
         defaultValues={initialProduct}
