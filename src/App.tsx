@@ -5,15 +5,18 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { themeConfig } from './theme/theme'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { AppLayout } from './components/AppLayout'
+import { ServerWarmup } from './components/ServerWarmup'
 
 function App() {
   return (
     <ErrorBoundary>
       <ConfigProvider theme={themeConfig}>
-        <QueryClientProvider client={queryClient}>
-          <ReactQueryDevtools initialIsOpen={false} />
-          <AppLayout />
-        </QueryClientProvider>
+        <ServerWarmup>
+          <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
+            <AppLayout />
+          </QueryClientProvider>
+        </ServerWarmup>
       </ConfigProvider>
     </ErrorBoundary>
   )

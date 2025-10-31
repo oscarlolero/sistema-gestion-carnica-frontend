@@ -1,6 +1,12 @@
 import axios, { AxiosError, isAxiosError } from 'axios'
 import { message as antdMessage } from 'antd'
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    suppressErrorToast?: boolean
+  }
+}
+
 type ApiErrorResponse = {
   message?: string
   error?: string
@@ -37,8 +43,15 @@ export const client = axios.create({
 client.interceptors.response.use(
   (res) => res,
   (err) => {
+    const suppressErrorToast = (err.config as { suppressErrorToast?: boolean } | undefined)
+      ?.suppressErrorToast
+
     // Ignore cancellations (e.g. aborted requests)
-    if (isAxiosError<ApiErrorResponse>(err) && err.code !== AxiosError.ERR_CANCELED) {
+    if (
+      !suppressErrorToast &&
+      isAxiosError<ApiErrorResponse>(err) &&
+      err.code !== AxiosError.ERR_CANCELED
+    ) {
       antdMessage.open({ type: 'error', content: pickApiMessage(err), duration: 4 })
     }
     return Promise.reject(err)
