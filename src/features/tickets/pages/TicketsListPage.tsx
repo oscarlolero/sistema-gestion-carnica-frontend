@@ -7,7 +7,6 @@ import { createTicketColumns } from '../components/TicketTableColumns'
 import { TicketExpandedRow } from '../components/TicketExpandedRow'
 import { DailySummaryModal } from '../components/DailySummaryModal'
 import type { TicketResponse } from '../types'
-import { useDebounce } from '@/utils'
 import type { SortOrder } from '@/types'
 import dayjs from 'dayjs'
 
@@ -16,7 +15,7 @@ type TicketTableRecord = TicketResponse
 export const TicketsListPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([])
   const [sortBy, setSortBy] = useState<'date' | 'createdAt' | 'updatedAt' | 'total'>('date')
   const [order, setOrder] = useState<SortOrder>('desc')
   const [dateRange, setDateRange] = useState<[string | undefined, string | undefined]>([
@@ -25,11 +24,9 @@ export const TicketsListPage = () => {
   ])
   const [showDailySummary, setShowDailySummary] = useState(false)
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 500)
-
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, sortBy, order, dateRange])
+  }, [selectedProducts, sortBy, order, dateRange])
 
   const {
     data: ticketsResponse,
@@ -38,7 +35,7 @@ export const TicketsListPage = () => {
   } = useTickets({
     page: currentPage,
     limit: pageSize,
-    search: debouncedSearchTerm || undefined,
+    productIds: selectedProducts.length > 0 ? selectedProducts : undefined,
     sortBy,
     order,
     startDate: dateRange[0],
@@ -75,10 +72,10 @@ export const TicketsListPage = () => {
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           <TicketFilters
-            searchTerm={searchTerm}
+            selectedProducts={selectedProducts}
             sortBy={sortBy}
             order={order}
-            onSearchChange={setSearchTerm}
+            onProductsChange={setSelectedProducts}
             onSortByChange={setSortBy}
             onOrderChange={setOrder}
             onDateRangeChange={handleDateRangeChange}

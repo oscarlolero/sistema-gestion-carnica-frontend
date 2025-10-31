@@ -16,6 +16,7 @@ export interface TicketListParams {
   endDate?: string
   sortBy?: 'date' | 'createdAt' | 'updatedAt' | 'total'
   order?: SortOrder
+  productIds?: number[]
 }
 
 export type TicketListResponse = PaginatedResponse<TicketResponse>
@@ -23,7 +24,17 @@ export type TicketListResponse = PaginatedResponse<TicketResponse>
 export const getTickets = async (
   params: TicketListParams = { page: 1, limit: 10 },
 ): Promise<TicketListResponse> => {
-  const { page = 1, limit = 10, search, sortBy, order, userId, startDate, endDate } = params
+  const {
+    page = 1,
+    limit = 10,
+    search,
+    sortBy,
+    order,
+    userId,
+    startDate,
+    endDate,
+    productIds,
+  } = params
 
   const searchParam = search ? `&search=${encodeURIComponent(search)}` : ''
   const sortParam = sortBy ? `&sortBy=${sortBy}` : ''
@@ -31,9 +42,11 @@ export const getTickets = async (
   const userIdParam = userId ? `&userId=${userId}` : ''
   const startDateParam = startDate ? `&startDate=${encodeURIComponent(startDate)}` : ''
   const endDateParam = endDate ? `&endDate=${encodeURIComponent(endDate)}` : ''
+  const productIdsParam =
+    productIds && productIds.length > 0 ? `&productIds=${productIds.join(',')}` : ''
 
   const res = await client.get(
-    `/tickets?page=${page}&limit=${limit}${searchParam}${sortParam}${orderParam}${userIdParam}${startDateParam}${endDateParam}`,
+    `/tickets?page=${page}&limit=${limit}${searchParam}${sortParam}${orderParam}${userIdParam}${startDateParam}${endDateParam}${productIdsParam}`,
   )
   return res.data
 }
