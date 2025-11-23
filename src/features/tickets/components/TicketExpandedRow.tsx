@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Tag, Button, Modal, message } from 'antd'
 import { PrinterOutlined } from '@ant-design/icons'
-import { useReactToPrint } from 'react-to-print'
 import type { TicketResponse } from '../types'
 import { formatCurrency } from '@/utils'
 import { PrintableTicket } from '@/features/pos/components/PrintableTicket'
 import { useUpdateTicket } from '../queries'
+import { printTicket } from '@/features/pos/utils/printTicket'
 
 interface TicketExpandedRowProps {
   ticket: TicketResponse
@@ -13,35 +13,29 @@ interface TicketExpandedRowProps {
 
 export const TicketExpandedRow = ({ ticket }: TicketExpandedRowProps) => {
   const [showPrintDialog, setShowPrintDialog] = useState(false)
-  const printRef = useRef<HTMLDivElement>(null)
   const updateTicketMutation = useUpdateTicket()
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `Ticket-${ticket.id}`,
-    onAfterPrint: async () => {
-      if (!ticket.printed) {
-        try {
-          await updateTicketMutation.mutateAsync({
-            id: ticket.id,
-            dto: { printed: true },
-          })
-          message.success('Ticket marcado como impreso')
-        } catch (error) {
-          message.error('Error al actualizar el estado del ticket')
-          console.error('Error updating ticket:', error)
-        }
+  const handlePrintConfirm = async () => {
+    printTicket(ticket)
+    
+    if (!ticket.printed) {
+      try {
+        await updateTicketMutation.mutateAsync({
+          id: ticket.id,
+          dto: { printed: true },
+        })
+        message.success('Ticket marcado como impreso')
+      } catch (error) {
+        message.error('Error al actualizar el estado del ticket')
+        console.error('Error updating ticket:', error)
       }
-    },
-  })
+    }
+    
+    setShowPrintDialog(false)
+  }
 
   const handlePrintClick = () => {
     setShowPrintDialog(true)
-  }
-
-  const handlePrintConfirm = () => {
-    handlePrint()
-    setShowPrintDialog(false)
   }
 
   const handlePrintCancel = () => {
@@ -120,10 +114,11 @@ export const TicketExpandedRow = ({ ticket }: TicketExpandedRowProps) => {
         <div className="py-4">
           <p className="mb-4 text-center text-[#4a4a4a]">¿Desea imprimir este ticket?</p>
           <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
-            <PrintableTicket ref={printRef} ticket={ticket} />
+            <PrintableTicket ticket={ticket} />
           </div>
         </div>
       </Modal>
     </div>
   )
 }
+

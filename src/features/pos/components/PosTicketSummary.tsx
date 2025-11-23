@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Button, InputNumber, Modal, Select, Form, Input } from 'antd'
 import {
   CloseOutlined,
@@ -16,9 +16,9 @@ import { useCreateTicket } from '@/features/tickets/queries'
 import { useCreateUser } from '@/features/users/queries'
 import type { User } from '@/features/users/types'
 import { message } from 'antd'
-import { useReactToPrint } from 'react-to-print'
 import { PrintableTicket } from './PrintableTicket'
 import type { TicketResponse } from '@/features/tickets/types'
+import { printTicket } from '../utils/printTicket'
 
 type PosTicketSummaryProps = {
   items: CartItem[]
@@ -54,7 +54,6 @@ export const PosTicketSummary = ({
   const [showPrintDialog, setShowPrintDialog] = useState(false)
   const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [createdTicket, setCreatedTicket] = useState<TicketResponse | null>(null)
-  const printRef = useRef<HTMLDivElement>(null)
   
   const createTicketMutation = useCreateTicket()
   const createUserMutation = useCreateUser()
@@ -81,11 +80,6 @@ export const PosTicketSummary = ({
     setEditingItemId(null)
     setTempQuantity('')
   }
-
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `Ticket-${createdTicket?.id || 'preview'}`,
-  })
 
   const handleFinalizeSale = async () => {
     if (items.length === 0) {
@@ -126,7 +120,9 @@ export const PosTicketSummary = ({
   }
 
   const handlePrintConfirm = () => {
-    handlePrint()
+    if (createdTicket) {
+      printTicket(createdTicket)
+    }
     setShowPrintDialog(false)
     onClearCart()
     setCreatedTicket(null)
@@ -332,7 +328,7 @@ export const PosTicketSummary = ({
           </p>
           {createdTicket && (
             <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
-              <PrintableTicket ref={printRef} ticket={createdTicket} />
+              <PrintableTicket ticket={createdTicket} />
             </div>
           )}
         </div>
@@ -368,3 +364,4 @@ export const PosTicketSummary = ({
     </aside>
   )
 }
+
