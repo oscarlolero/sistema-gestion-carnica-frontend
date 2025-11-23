@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PosCategoryFilter, PosProductGrid, PosSearchBar, PosTicketSummary } from '../components'
 import { useProducts, useCategories } from '@/features/products/queries'
+import { useUsers } from '@/features/users/queries'
 import type { CartItem, PaymentType } from '../types'
 import type { ProductResponse } from '@/features/products/types'
 
@@ -10,9 +11,12 @@ export const PosPage = () => {
   const [cart, setCart] = useState<CartItem[]>([])
   const [paymentType, setPaymentType] = useState<PaymentType>('cash')
 
-  // Fetch products and categories from backend
+  // Fetch products, categories, and users from backend
   const { data: productsData, isLoading: productsLoading } = useProducts({ page: 1, limit: 1000 })
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories()
+  const { data: usersData } = useUsers()
+
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 
   // Prepare categories for filter (add 'all' option)
   const categoryOptions = useMemo(
@@ -122,6 +126,7 @@ export const PosPage = () => {
   // Clear cart
   const handleClearCart = () => {
     setCart([])
+    setSelectedUserId(null)
   }
 
   const isLoading = productsLoading || categoriesLoading
@@ -168,6 +173,9 @@ export const PosPage = () => {
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
           onClearCart={handleClearCart}
+          users={usersData ?? []}
+          selectedUserId={selectedUserId}
+          onUserChange={setSelectedUserId}
         />
       </div>
     </div>

@@ -99,6 +99,12 @@ export const PrintableTicket = forwardRef<HTMLDivElement, PrintableTicketProps>(
             <p>¡Gracias por su compra!</p>
             <p>Vuelva pronto</p>
           </div>
+
+          {/* Signature */}
+          <div className="ticket-signature">
+            <p>Firma de recibido:</p>
+            <div className="signature-line">____________________</div>
+          </div>
         </div>
 
         <style>{`
@@ -217,7 +223,23 @@ export const PrintableTicket = forwardRef<HTMLDivElement, PrintableTicketProps>(
             margin: 2px 0;
           }
 
-          /* Screen preview styles */
+          .ticket-signature {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 9px;
+          }
+
+          .ticket-signature p {
+            margin: 4px 0 2px 0;
+            font-weight: bold;
+          }
+
+          .signature-line {
+            border-bottom: 1px solid #000;
+            width: 100%;
+            height: 20px;
+            margin-top: 4px;
+          }
           @media screen {
             .ticket-print {
               border: 1px solid #ddd;

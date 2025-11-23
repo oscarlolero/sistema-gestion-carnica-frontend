@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Button, InputNumber, Modal } from 'antd'
+import { Button, InputNumber, Modal, Select, Form, Input } from 'antd'
 import {
   CloseOutlined,
   MinusOutlined,
@@ -7,10 +7,14 @@ import {
   FileTextOutlined,
   EditOutlined,
   PrinterOutlined,
+  UserOutlined,
+  UserAddOutlined,
 } from '@ant-design/icons'
 import type { CartItem, PaymentType } from '../types'
 import { paymentTypeLabels } from '../types'
 import { useCreateTicket } from '@/features/tickets/queries'
+import { useCreateUser } from '@/features/users/queries'
+import type { User } from '@/features/users/types'
 import { message } from 'antd'
 import { useReactToPrint } from 'react-to-print'
 import { PrintableTicket } from './PrintableTicket'
@@ -23,6 +27,9 @@ type PosTicketSummaryProps = {
   onUpdateQuantity: (itemId: string, quantity: number) => void
   onRemoveItem: (itemId: string) => void
   onClearCart: () => void
+  users: User[]
+  selectedUserId: number | null
+  onUserChange: (userId: number | null) => void
 }
 
 const formatter = new Intl.NumberFormat('es-MX', {
@@ -37,14 +44,21 @@ export const PosTicketSummary = ({
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
+  users,
+  selectedUserId,
+  onUserChange,
 }: PosTicketSummaryProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [tempQuantity, setTempQuantity] = useState<string>('')
   const [showPrintDialog, setShowPrintDialog] = useState(false)
+  const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [createdTicket, setCreatedTicket] = useState<TicketResponse | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
+  
   const createTicketMutation = useCreateTicket()
+  const createUserMutation = useCreateUser()
+  const [form] = Form.useForm()
 
   const total = items.reduce((sum, item) => sum + item.subtotal, 0)
 
@@ -79,11 +93,17 @@ export const PosTicketSummary = ({
       return
     }
 
+    if (!selectedUserId) {
+      message.error('Debe seleccionar un empleado')
+      return
+    }
+
     setIsProcessing(true)
     try {
       const ticket = await createTicketMutation.mutateAsync({
         total,
         paymentType: paymentTypeLabels[paymentType],
+        userId: selectedUserId,
         items: items.map((item) => ({
           productId: item.productId,
           cutId: item.cutId,
@@ -118,13 +138,45 @@ export const PosTicketSummary = ({
     setCreatedTicket(null)
   }
 
+  const handleCreateUser = async (values: { name: string }) => {
+    try {
+      const newUser = await createUserMutation.mutateAsync(values)
+      message.success('Empleado agregado exitosamente')
+      setShowAddUserModal(false)
+      form.resetFields()
+      onUserChange(newUser.id)
+    } catch (error) {
+      message.error('Error al agregar empleado')
+      console.error('Error creating user:', error)
+    }
+  }
+
   return (
     <aside className="flex h-full flex-col rounded-3xl bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#2d2d2d]">Ticket Actual</h2>
-        <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#b22222]">
-          #{items.length.toString().padStart(3, '0')}
-        </span>
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-[#2d2d2d]">Ticket Actual</h2>
+          <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#b22222]">
+            #{items.length.toString().padStart(3, '0')}
+          </span>
+        </div>
+
+        {/* Employee Selection */}
+        <div className="flex gap-2">
+          <Select
+            className="flex-1"
+            placeholder="Seleccionar empleado"
+            value={selectedUserId}
+            onChange={onUserChange}
+            options={users.map((user) => ({ label: user.name, value: user.id }))}
+            suffixIcon={<UserOutlined className="text-[#b22222]" />}
+          />
+          <Button
+            icon={<UserAddOutlined />}
+            onClick={() => setShowAddUserModal(true)}
+            className="border-[#b22222] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#b22222] hover:text-[#b22222]"
+          />
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -284,6 +336,34 @@ export const PosTicketSummary = ({
             </div>
           )}
         </div>
+      </Modal>
+
+      {/* Add User Modal */}
+      <Modal
+        title="Agregar Empleado"
+        open={showAddUserModal}
+        onCancel={() => {
+          setShowAddUserModal(false)
+          form.resetFields()
+        }}
+        footer={null}
+        centered
+      >
+        <Form form={form} onFinish={handleCreateUser} layout="vertical">
+          <Form.Item
+            name="name"
+            label="Nombre del empleado"
+            rules={[{ required: true, message: 'Por favor ingrese el nombre' }]}
+          >
+            <Input placeholder="Ej. Juan Perez" />
+          </Form.Item>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setShowAddUserModal(false)}>Cancelar</Button>
+            <Button type="primary" htmlType="submit" loading={createUserMutation.isPending} className="bg-[#b22222] hover:bg-[#921c1c]">
+              Guardar
+            </Button>
+          </div>
+        </Form>
       </Modal>
     </aside>
   )
