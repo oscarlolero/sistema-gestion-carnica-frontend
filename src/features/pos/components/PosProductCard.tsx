@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CloseOutlined } from '@ant-design/icons'
+import { CloseOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Button, InputNumber, Select } from 'antd'
 import type { ProductResponse } from '@/features/products/types'
 
@@ -173,25 +173,24 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
           </div>
         )}
 
-        <div className="mt-auto flex gap-2">
-          <Button
-            type="primary"
-            disabled={!product.isActive}
-            onClick={handleAdd}
-            className={`bg-[#b22222] text-sm font-semibold hover:bg-[#921c1c] disabled:bg-gray-400 [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] ${
-              showQuantityInput ? 'flex-1' : 'flex-1'
-            }`}
-          >
-            Agregar
-          </Button>
-          {showQuantityInput && (
+        <div className="mt-auto">
+          {!showQuantityInput ? (
+            <Button
+              type="primary"
+              disabled={!product.isActive}
+              onClick={handleAdd}
+              className="w-full bg-[#b22222] text-sm font-semibold hover:bg-[#921c1c] disabled:bg-gray-400 [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c]"
+            >
+              Agregar
+            </Button>
+          ) : (
             <div className="flex items-center gap-2">
               <Button
                 type="default"
                 icon={<CloseOutlined />}
                 onClick={handleCancelQuantity}
                 shape="circle"
-                className="bg-gray-400 border-none text-white hover:bg-gray-500 w-8 h-8 p-0 [&.ant-btn]:bg-gray-400 [&.ant-btn]:hover:bg-gray-500 [&.ant-btn]:border-none [&.ant-btn-circle]:w-8 [&.ant-btn-circle]:h-8 [&.ant-btn-circle]:min-w-8"
+                className="shrink-0 bg-gray-400 border-none text-white hover:bg-gray-500 w-9 h-9 p-0 [&.ant-btn]:bg-gray-400 [&.ant-btn]:hover:bg-gray-500 [&.ant-btn]:border-none [&.ant-btn-circle]:w-9 [&.ant-btn-circle]:h-9 [&.ant-btn-circle]:min-w-9"
               />
               <InputNumber
                 min={1}
@@ -200,7 +199,14 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
                 onChange={handleQuantityChange}
                 onPressEnter={handleAdd}
                 autoFocus
-                className="w-20 [&_.ant-input]:text-center [&_.ant-input]:font-semibold"
+                className="flex-1 [&_.ant-input]:text-center [&_.ant-input]:font-semibold"
+              />
+              <Button
+                type="primary"
+                icon={<ArrowRightOutlined />}
+                onClick={handleAdd}
+                shape="circle"
+                className="shrink-0 bg-[#b22222] border-[#b22222] text-white hover:bg-[#921c1c] hover:border-[#921c1c] w-9 h-9 p-0 [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn-circle]:w-9 [&.ant-btn-circle]:h-9 [&.ant-btn-circle]:min-w-9"
               />
             </div>
           )}
