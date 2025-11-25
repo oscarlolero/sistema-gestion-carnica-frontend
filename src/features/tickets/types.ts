@@ -29,6 +29,11 @@ export interface TicketResponse {
     name: string
     email: string | null
   } | null
+  clientId: number | null
+  client: {
+    id: number
+    name: string
+  } | null
 }
 
 export interface CreateTicketDto {
@@ -36,6 +41,7 @@ export interface CreateTicketDto {
   total: number
   paymentType: string
   userId?: number
+  clientId?: number
   printed?: boolean
   items: Array<{
     productId: number

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { PosCategoryFilter, PosProductGrid, PosSearchBar, PosTicketSummary } from '../components'
 import { useProducts, useCategories } from '@/features/products/queries'
 import { useUsers } from '@/features/users/queries'
+import { useClients } from '@/features/clients/queries'
 import type { CartItem, PaymentType } from '../types'
 import type { ProductResponse } from '@/features/products/types'
 
@@ -15,8 +16,10 @@ export const PosPage = () => {
   const { data: productsData, isLoading: productsLoading } = useProducts({ page: 1, limit: 1000 })
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories()
   const { data: usersData } = useUsers()
+  const { data: clientsData } = useClients()
 
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
 
   // Prepare categories for filter (add 'all' option)
   const categoryOptions = useMemo(
@@ -127,6 +130,7 @@ export const PosPage = () => {
   const handleClearCart = () => {
     setCart([])
     setSelectedUserId(null)
+    setSelectedClientId(null)
   }
 
   const isLoading = productsLoading || categoriesLoading
@@ -176,6 +180,9 @@ export const PosPage = () => {
           users={usersData ?? []}
           selectedUserId={selectedUserId}
           onUserChange={setSelectedUserId}
+          clients={clientsData ?? []}
+          selectedClientId={selectedClientId}
+          onClientChange={setSelectedClientId}
         />
       </div>
     </div>

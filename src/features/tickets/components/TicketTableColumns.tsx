@@ -57,6 +57,12 @@ export const createTicketColumns = ({
     render: (user: TicketResponse['user']) => user?.name || '-',
   },
   {
+    title: 'Cliente',
+    dataIndex: 'client',
+    key: 'client',
+    render: (client: TicketResponse['client']) => client?.name || '-',
+  },
+  {
     title: 'Creado',
     dataIndex: 'createdAt',
     key: 'createdAt',

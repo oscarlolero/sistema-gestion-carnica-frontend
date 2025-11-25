@@ -19,6 +19,8 @@ import { message } from 'antd'
 import { PrintableTicket } from './PrintableTicket'
 import type { TicketResponse } from '@/features/tickets/types'
 import { HiddenTicketPrinter } from './HiddenTicketPrinter'
+import type { Client } from '@/features/clients/types'
+import { useCreateClient } from '@/features/clients/queries'
 
 type PosTicketSummaryProps = {
   items: CartItem[]
@@ -30,6 +32,9 @@ type PosTicketSummaryProps = {
   users: User[]
   selectedUserId: number | null
   onUserChange: (userId: number | null) => void
+  clients: Client[]
+  selectedClientId: number | null
+  onClientChange: (clientId: number | null) => void
 }
 
 const formatter = new Intl.NumberFormat('es-MX', {
@@ -47,17 +52,23 @@ export const PosTicketSummary = ({
   users,
   selectedUserId,
   onUserChange,
+  clients,
+  selectedClientId,
+  onClientChange,
 }: PosTicketSummaryProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [tempQuantity, setTempQuantity] = useState<string>('')
   const [showPrintDialog, setShowPrintDialog] = useState(false)
   const [showAddUserModal, setShowAddUserModal] = useState(false)
+  const [showAddClientModal, setShowAddClientModal] = useState(false)
   const [createdTicket, setCreatedTicket] = useState<TicketResponse | null>(null)
   
   const createTicketMutation = useCreateTicket()
   const createUserMutation = useCreateUser()
+  const createClientMutation = useCreateClient()
   const [form] = Form.useForm()
+  const [clientForm] = Form.useForm()
 
   const total = items.reduce((sum, item) => sum + item.subtotal, 0)
 
@@ -98,6 +109,7 @@ export const PosTicketSummary = ({
         total,
         paymentType: paymentTypeLabels[paymentType],
         userId: selectedUserId,
+        clientId: selectedClientId ?? undefined,
         items: items.map((item) => ({
           productId: item.productId,
           cutId: item.cutId,
@@ -149,6 +161,19 @@ export const PosTicketSummary = ({
     }
   }
 
+  const handleCreateClient = async (values: { name: string }) => {
+    try {
+      const newClient = await createClientMutation.mutateAsync(values)
+      message.success('Cliente agregado exitosamente')
+      setShowAddClientModal(false)
+      clientForm.resetFields()
+      onClientChange(newClient.id)
+    } catch (error) {
+      message.error('Error al agregar cliente')
+      console.error('Error creating client:', error)
+    }
+  }
+
   return (
     <aside className="flex h-full flex-col rounded-3xl bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
       <div className="mb-6 space-y-4">
@@ -175,6 +200,26 @@ export const PosTicketSummary = ({
             className="border-[#b22222] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#b22222] hover:text-[#b22222]"
           />
         </div>
+
+        {/* Client Selection */}
+        <div className="flex gap-2">
+          <Select
+            className="flex-1"
+            placeholder="Seleccionar cliente (Opcional)"
+            value={selectedClientId}
+            onChange={onClientChange}
+            options={clients.map((client) => ({ label: client.name, value: client.id }))}
+            allowClear
+            suffixIcon={<UserOutlined className="text-[#b22222]" />}
+          />
+          <Button
+            icon={<UserAddOutlined />}
+            onClick={() => setShowAddClientModal(true)}
+            className="border-[#b22222] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#b22222] hover:text-[#b22222]"
+          />
+        </div>
+
+
       </div>
 
       {items.length === 0 ? (
@@ -363,6 +408,40 @@ export const PosTicketSummary = ({
           </div>
         </Form>
       </Modal>
+
+      {/* Add Client Modal */}
+      <Modal
+        title="Agregar Cliente"
+        open={showAddClientModal}
+        onCancel={() => {
+          setShowAddClientModal(false);
+          clientForm.resetFields();
+        }}
+        footer={null}
+        centered
+      >
+        <Form form={clientForm} onFinish={handleCreateClient} layout="vertical">
+          <Form.Item
+            name="name"
+            label="Nombre del cliente"
+            rules={[{ required: true, message: 'Por favor ingrese el nombre' }]}
+          >
+            <Input placeholder="Ej. Cliente XYZ" />
+          </Form.Item>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setShowAddClientModal(false)}>Cancelar</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createClientMutation.isPending}
+              className="bg-[#b22222] hover:bg-[#921c1c]"
+            >
+              Guardar
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
       {/* Hidden Printer */}
       <HiddenTicketPrinter ticket={createdTicket} />
     </aside>

@@ -49,6 +49,11 @@ export const PrintableTicket = ({ ticket }: PrintableTicketProps) => {
               <strong>Cajero:</strong> {ticket.user.name}
             </p>
           )}
+          {ticket.client && (
+            <p>
+              <strong>Cliente:</strong> {ticket.client.name}
+            </p>
+          )}
         </div>
 
         {/* Divider */}
