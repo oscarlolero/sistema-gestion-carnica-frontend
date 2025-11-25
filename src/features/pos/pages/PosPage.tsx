@@ -169,7 +169,7 @@ export const PosPage = () => {
         </section>
       </div>
 
-      <div className="hidden w-[360px] shrink-0 xl:block">
+      <div className="w-[280px] md:w-[320px] xl:w-[360px] shrink-0">
         <PosTicketSummary
           items={cart}
           paymentType={paymentType}

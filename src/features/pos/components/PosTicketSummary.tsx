@@ -175,10 +175,10 @@ export const PosTicketSummary = ({
   }
 
   return (
-    <aside className="flex h-full flex-col rounded-3xl bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-      <div className="mb-6 space-y-4">
+    <aside className="flex h-full flex-col rounded-3xl bg-white p-4 xl:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
+      <div className="mb-4 xl:mb-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#2d2d2d]">Ticket Actual</h2>
+          <h2 className="text-base xl:text-lg font-semibold text-[#2d2d2d]">Ticket Actual</h2>
           <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#b22222]">
             #{items.length.toString().padStart(3, '0')}
           </span>
@@ -305,7 +305,7 @@ export const PosTicketSummary = ({
         </div>
       )}
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-4 xl:mt-6 space-y-3">
         <div className="space-y-2">
           <label className="text-xs font-medium text-[#8c8c8c]">Método de pago:</label>
           <div className="grid grid-cols-3 gap-2">
