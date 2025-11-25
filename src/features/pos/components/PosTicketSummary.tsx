@@ -18,7 +18,7 @@ import type { User } from '@/features/users/types'
 import { message } from 'antd'
 import { PrintableTicket } from './PrintableTicket'
 import type { TicketResponse } from '@/features/tickets/types'
-import { HiddenTicketPrinter } from './HiddenTicketPrinter'
+import { printTicket } from '../utils/printTicket'
 import type { Client } from '@/features/clients/types'
 import { useCreateClient } from '@/features/clients/queries'
 
@@ -132,14 +132,12 @@ export const PosTicketSummary = ({
   }
 
   const handlePrintConfirm = () => {
-    // The ticket is already set in createdTicket, which is passed to HiddenTicketPrinter
-    // We just need to trigger the print
-    setTimeout(() => {
-      window.print()
-      setShowPrintDialog(false)
-      onClearCart()
-      setCreatedTicket(null)
-    }, 100)
+    if (createdTicket) {
+      printTicket(createdTicket)
+    }
+    setShowPrintDialog(false)
+    onClearCart()
+    setCreatedTicket(null)
   }
 
   const handlePrintCancel = () => {
@@ -441,10 +439,6 @@ export const PosTicketSummary = ({
           </div>
         </Form>
       </Modal>
-
-      {/* Hidden Printer */}
-      <HiddenTicketPrinter ticket={createdTicket} />
     </aside>
   )
 }
-
