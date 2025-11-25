@@ -1,1 +1,38 @@
 @import 'tailwindcss';
+
+@media print {
+  @page {
+    size: 58mm auto;
+    margin: 0mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* Hide everything by default */
+  body > *:not(#print-section) {
+    display: none !important;
+  }
+
+  /* Show only the print section */
+  #print-section {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 58mm;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ensure ticket content fits and doesn't break */
+  #print-section * {
+    visibility: visible;
+  }
+}
+
+/* Hide print section on screen */
+#print-section {
+  display: none;
+}
