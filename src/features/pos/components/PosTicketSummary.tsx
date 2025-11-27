@@ -18,7 +18,6 @@ import type { User } from '@/features/users/types'
 import { message } from 'antd'
 import { PrintableTicket } from './PrintableTicket'
 import type { TicketResponse } from '@/features/tickets/types'
-import { HiddenTicketPrinter } from './HiddenTicketPrinter'
 import type { Client } from '@/features/clients/types'
 import { useCreateClient } from '@/features/clients/queries'
 
@@ -41,6 +40,8 @@ const formatter = new Intl.NumberFormat('es-MX', {
   style: 'currency',
   currency: 'MXN',
 })
+
+const to2 = (n: number | string) => Number(n || 0).toFixed(2)
 
 export const PosTicketSummary = ({
   items,
@@ -131,15 +132,140 @@ export const PosTicketSummary = ({
     }
   }
 
+  const printTicket80mm = (ticket: TicketResponse) => {
+    const STORE_NAME = "Carnes y Vísceras del Centro"
+    const cliente = ticket.client?.name || '(Público General)'
+    const obs = ticket.paymentType // Usamos el tipo de pago como info extra
+    const fecha = new Date(ticket.createdAt).toLocaleString('es-MX')
+
+    const filas = ticket.items.map(d => {
+      const cantidadTexto = `${to2(d.quantity)} ${d.unit}`
+      const productoNombre = d.product.name + (d.cut ? ` (${d.cut.name})` : '')
+      
+      return `
+      <tr>
+        <td>${productoNombre}</td>
+        <td class="right">${cantidadTexto}</td>
+        <td class="right">$${to2(d.subtotal)}</td>
+      </tr>
+      `
+    }).join('')
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="utf-8" />
+      <title>Ticket 80mm</title>
+      <style>
+        :root{--ink:#111}
+        *{box-sizing:border-box}
+        body{
+          margin:0;
+          background:#fff;
+          color:var(--ink);
+          font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        }
+        #ticket{
+          background:#fff;
+          border:1px dashed #999;
+          border-radius:10px;
+          padding:6px;
+          max-width:80mm;
+          margin:0 auto;
+        }
+        #ticket h3{
+          margin:0 0 4px;
+          text-align:center;
+          font-size:14px;
+        }
+        #ticket .meta{
+          font-size:11px;
+          margin-bottom:4px;
+        }
+        #ticket table{
+          width:100%;
+          border-collapse:collapse;
+          font-size:11px;
+          table-layout:fixed;
+        }
+        #ticket th,#ticket td{
+          padding:2px 1px;
+          border-bottom:1px dashed #ddd;
+          word-wrap:break-word;
+        }
+        #ticket tfoot td{
+          border-top:1px solid #999;
+          font-weight:bold;
+        }
+        .right{text-align:right}
+        @media print{
+          @page { size: 80mm auto; margin: 0mm; }
+          body{background:#fff}
+          #ticket{
+            width:80mm;
+            max-width:80mm;
+            margin:0;
+            padding:2mm;
+            border:none;
+          }
+          tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      <div id="ticket">
+        <h3>${STORE_NAME}</h3>
+        <div class="meta">
+          Ticket de Venta<br/>
+          Cliente: ${cliente}<br/>
+          Folio: ${ticket.id}<br/>
+          Fecha: ${fecha}<br/>
+          Pago: ${obs}
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Prod</th>
+              <th class="right">Cant</th>
+              <th class="right">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filas}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" class="right">TOTAL:</td>
+              <td class="right">$${to2(ticket.total)}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div style="margin-top:6px;text-align:center;font-size:11px">
+          ¡Gracias por su preferencia! ¡Carnes y Visceras del Centro tu mejor aliado!
+        </div>
+      </div>
+    </body>
+    </html>
+    `
+
+    const win = window.open('', '_blank', 'width=400,height=600')
+    if (win) {
+      win.document.open()
+      win.document.write(html)
+      win.document.close()
+      win.focus()
+      setTimeout(() => { win.print() }, 300)
+    }
+  }
+
   const handlePrintConfirm = () => {
-    // The ticket is already set in createdTicket, which is passed to HiddenTicketPrinter
-    // We just need to trigger the print
-    setTimeout(() => {
-      window.print()
-      setShowPrintDialog(false)
-      onClearCart()
-      setCreatedTicket(null)
-    }, 100)
+    if (createdTicket) {
+      printTicket80mm(createdTicket)
+    }
+    setShowPrintDialog(false)
+    onClearCart()
+    setCreatedTicket(null)
   }
 
   const handlePrintCancel = () => {
@@ -441,10 +567,6 @@ export const PosTicketSummary = ({
           </div>
         </Form>
       </Modal>
-
-      {/* Hidden Printer */}
-      <HiddenTicketPrinter ticket={createdTicket} />
     </aside>
   )
 }
-
