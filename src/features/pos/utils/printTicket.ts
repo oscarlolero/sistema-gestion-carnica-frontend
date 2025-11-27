@@ -17,139 +17,247 @@ export const printTicket = (ticket: TicketResponse) => {
     })
   }
 
-  const ticketContent = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Ticket #${ticket.id}</title>
-        <style>
-          @page {
-            size: 58mm auto;
-            margin: 0;
-          }
-          body {
-            margin: 0;
-            padding: 4mm;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            width: 58mm;
-            box-sizing: border-box;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 10px;
-          }
-          .header h1 {
-            font-size: 16px;
-            margin: 0;
-            font-weight: bold;
-          }
-          .header p {
-            margin: 2px 0;
-            font-size: 10px;
-          }
-          .divider {
-            border-top: 1px dashed #000;
-            margin: 5px 0;
-          }
-          .info {
-            font-size: 10px;
-            margin-bottom: 5px;
-          }
-          .info p {
-            margin: 2px 0;
-          }
-          .items-header {
-            display: flex;
-            font-weight: bold;
-            font-size: 10px;
-            margin-bottom: 2px;
-          }
-          .col-qty { width: 15%; text-align: left; }
-          .col-prod { width: 45%; text-align: left; }
-          .col-price { width: 20%; text-align: right; }
-          .col-total { width: 20%; text-align: right; }
-          
-          .item {
-            display: flex;
-            font-size: 10px;
-            margin: 2px 0;
-          }
-          .total-section {
-            margin-top: 10px;
-            text-align: right;
-            font-size: 14px;
-            font-weight: bold;
-          }
-          .footer {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 10px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
+  const itemsHtml = ticket.items.map((item) => `
+    <div class="ticket-item">
+      <div class="ticket-item-name">
+        ${item.product.name}${item.cut ? ` - ${item.cut.name}` : ''}
+      </div>
+      <div class="ticket-item-details">
+        <span>${item.quantity} ${item.unit}</span>
+        <span>${formatter.format(item.unitPrice)}</span>
+        <span>${formatter.format(item.subtotal)}</span>
+      </div>
+    </div>
+  `).join('')
+
+  const html = `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ticket 80mm</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        margin: 0;
+        background: #fff;
+        color: #000;
+        font-family: 'Courier New', monospace;
+      }
+      
+      .ticket-preview {
+        width: 80mm;
+        font-size: 9px;
+        line-height: 1.3;
+        color: #000;
+        background: white;
+        margin: 0 auto;
+        padding: 4mm;
+      }
+      
+      .ticket-header {
+        text-align: center;
+        margin-bottom: 8px;
+      }
+      
+      .ticket-header h1 {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0 0 2px 0;
+        letter-spacing: 1px;
+      }
+      
+      .ticket-subtitle {
+        font-size: 9px;
+        margin: 0;
+      }
+      
+      .ticket-divider {
+        margin: 4px 0;
+        font-size: 8px;
+        overflow: hidden;
+      }
+      
+      .ticket-info {
+        margin: 6px 0;
+      }
+      
+      .ticket-info p {
+        margin: 2px 0;
+        font-size: 9px;
+      }
+      
+      .ticket-info strong {
+        font-weight: bold;
+      }
+      
+      .ticket-items-header {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
+        gap: 2px;
+        font-weight: bold;
+        font-size: 8px;
+        margin-bottom: 2px;
+      }
+      
+      .ticket-items-header span {
+        text-align: right;
+      }
+      
+      .ticket-items-header span:first-child {
+        text-align: left;
+      }
+      
+      .ticket-item {
+        margin: 4px 0;
+      }
+      
+      .ticket-item-name {
+        font-size: 9px;
+        font-weight: bold;
+        margin-bottom: 2px;
+        word-wrap: break-word;
+      }
+      
+      .ticket-item-details {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1.2fr;
+        gap: 2px;
+        font-size: 8px;
+        text-align: right;
+      }
+      
+      .ticket-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        font-weight: bold;
+        margin: 6px 0;
+      }
+      
+      .ticket-footer {
+        text-align: center;
+        margin-top: 8px;
+        font-size: 9px;
+      }
+      
+      .ticket-footer p {
+        margin: 2px 0;
+      }
+      
+      .ticket-signature {
+        text-align: center;
+        margin-top: 8px;
+        font-size: 9px;
+      }
+      
+      .ticket-signature p {
+        margin: 4px 0 2px 0;
+        font-weight: bold;
+      }
+      
+      .signature-line {
+        border-bottom: 1px solid #000;
+        width: 100%;
+        height: 20px;
+        margin-top: 4px;
+      }
+      
+      @media print {
+        @page {
+          size: 80mm auto;
+          margin: 0mm;
+        }
+        
+        body {
+          background: #fff;
+        }
+        
+        .ticket-preview {
+          width: 80mm;
+          max-width: 80mm;
+          margin: 0;
+          padding: 2mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticket-preview">
+      <div class="ticket-content">
+        <!-- Header -->
+        <div class="ticket-header">
           <h1>CARNICERÍA</h1>
-          <p>Sistema de Gestión</p>
-          <p>${formatDate(ticket.createdAt)}</p>
-        </div>
-        
-        <div class="divider"></div>
-        
-        <div class="info">
-          <p>Ticket: #${ticket.id.toString().padStart(6, '0')}</p>
-          <p>Cajero: ${ticket.user?.name || 'General'}</p>
-          <p>Pago: ${ticket.paymentType}</p>
+          <p class="ticket-subtitle">Sistema de Gestión</p>
         </div>
 
-        <div class="divider"></div>
+        <!-- Divider -->
+        <div class="ticket-divider">${'='.repeat(32)}</div>
 
-        <div class="items-header">
-          <span class="col-qty">Cant</span>
-          <span class="col-prod">Prod</span>
-          <span class="col-price">P.U.</span>
-          <span class="col-total">Total</span>
+        <!-- Ticket Info -->
+        <div class="ticket-info">
+          <p><strong>Ticket:</strong> #${ticket.id.toString().padStart(6, '0')}</p>
+          <p><strong>Fecha:</strong> ${formatDate(ticket.createdAt)}</p>
+          <p><strong>Pago:</strong> ${ticket.paymentType}</p>
+          ${ticket.user ? `<p><strong>Cajero:</strong> ${ticket.user.name}</p>` : ''}
+          ${ticket.client ? `<p><strong>Cliente:</strong> ${ticket.client.name}</p>` : ''}
         </div>
 
-        ${ticket.items
-          .map(
-            (item) => `
-          <div class="item">
-            <span class="col-qty">${item.quantity} ${item.unit}</span>
-            <span class="col-prod">
-              ${item.product.name}
-              ${item.cut ? `<br/>- ${item.cut.name}` : ''}
-            </span>
-            <span class="col-price">${formatter.format(item.unitPrice)}</span>
-            <span class="col-total">${formatter.format(item.subtotal)}</span>
+        <!-- Divider -->
+        <div class="ticket-divider">${'='.repeat(32)}</div>
+
+        <!-- Items -->
+        <div class="ticket-items">
+          <div class="ticket-items-header">
+            <span>PRODUCTO</span>
+            <span>CANT</span>
+            <span>PRECIO</span>
+            <span>TOTAL</span>
           </div>
-        `
-          )
-          .join('')}
-
-        <div class="divider"></div>
-
-        <div class="total-section">
-          TOTAL: ${formatter.format(ticket.total)}
+          <div class="ticket-divider">${'-'.repeat(32)}</div>
+          ${itemsHtml}
         </div>
 
-        <div class="footer">
+        <!-- Divider -->
+        <div class="ticket-divider">${'='.repeat(32)}</div>
+
+        <!-- Total -->
+        <div class="ticket-total">
+          <span>TOTAL:</span>
+          <span>${formatter.format(ticket.total)}</span>
+        </div>
+
+        <!-- Divider -->
+        <div class="ticket-divider">${'='.repeat(32)}</div>
+
+        <!-- Footer -->
+        <div class="ticket-footer">
           <p>¡Gracias por su compra!</p>
+          <p>Vuelva pronto</p>
         </div>
-      </body>
-    </html>
+
+        <!-- Signature -->
+        <div class="ticket-signature">
+          <p>Firma de recibido:</p>
+          <div class="signature-line">____________________</div>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
   `
 
-  const printWindow = window.open('', '_blank', 'width=400,height=600')
-  if (printWindow) {
-    printWindow.document.write(ticketContent)
-    printWindow.document.close()
-    printWindow.focus()
-    // Small delay to ensure styles are loaded
-    setTimeout(() => {
-      printWindow.print()
-      printWindow.close()
-    }, 250)
+  const win = window.open('', '_blank', 'width=400,height=600')
+  if (win) {
+    win.document.open()
+    win.document.write(html)
+    win.document.close()
+    win.focus()
+    setTimeout(() => { win.print() }, 300)
   }
 }

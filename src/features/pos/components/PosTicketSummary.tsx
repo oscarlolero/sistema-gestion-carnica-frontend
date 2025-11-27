@@ -133,23 +133,29 @@ export const PosTicketSummary = ({
   }
 
   const printTicket80mm = (ticket: TicketResponse) => {
-    const STORE_NAME = "Carnes y Vísceras del Centro"
-    const cliente = ticket.client?.name || '(Público General)'
-    const obs = ticket.paymentType // Usamos el tipo de pago como info extra
-    const fecha = new Date(ticket.createdAt).toLocaleString('es-MX')
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString)
+      return date.toLocaleString('es-MX', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    }
 
-    const filas = ticket.items.map(d => {
-      const cantidadTexto = `${to2(d.quantity)} ${d.unit}`
-      const productoNombre = d.product.name + (d.cut ? ` (${d.cut.name})` : '')
-      
-      return `
-      <tr>
-        <td>${productoNombre}</td>
-        <td class="right">${cantidadTexto}</td>
-        <td class="right">$${to2(d.subtotal)}</td>
-      </tr>
-      `
-    }).join('')
+    const itemsHtml = ticket.items.map((item) => `
+      <div class="ticket-item">
+        <div class="ticket-item-name">
+          ${item.product.name}${item.cut ? ` - ${item.cut.name}` : ''}
+        </div>
+        <div class="ticket-item-details">
+          <span>${item.quantity} ${item.unit}</span>
+          <span>${formatter.format(item.unitPrice)}</span>
+          <span>${formatter.format(item.subtotal)}</span>
+        </div>
+      </div>
+    `).join('')
 
     const html = `
     <!DOCTYPE html>
@@ -158,91 +164,215 @@ export const PosTicketSummary = ({
       <meta charset="utf-8" />
       <title>Ticket 80mm</title>
       <style>
-        :root{--ink:#111}
-        *{box-sizing:border-box}
-        body{
-          margin:0;
-          background:#fff;
-          color:var(--ink);
-          font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
         }
-        #ticket{
-          background:#fff;
-          border:1px dashed #999;
-          border-radius:10px;
-          padding:6px;
-          max-width:80mm;
-          margin:0 auto;
+        
+        body {
+          margin: 0;
+          background: #fff;
+          color: #000;
+          font-family: 'Courier New', monospace;
         }
-        #ticket h3{
-          margin:0 0 4px;
-          text-align:center;
-          font-size:14px;
+        
+        .ticket-preview {
+          width: 80mm;
+          font-size: 9px;
+          line-height: 1.3;
+          color: #000;
+          background: white;
+          margin: 0 auto;
+          padding: 4mm;
         }
-        #ticket .meta{
-          font-size:11px;
-          margin-bottom:4px;
+        
+        .ticket-header {
+          text-align: center;
+          margin-bottom: 8px;
         }
-        #ticket table{
-          width:100%;
-          border-collapse:collapse;
-          font-size:11px;
-          table-layout:fixed;
+        
+        .ticket-header h1 {
+          font-size: 14px;
+          font-weight: bold;
+          margin: 0 0 2px 0;
+          letter-spacing: 1px;
         }
-        #ticket th,#ticket td{
-          padding:2px 1px;
-          border-bottom:1px dashed #ddd;
-          word-wrap:break-word;
+        
+        .ticket-subtitle {
+          font-size: 9px;
+          margin: 0;
         }
-        #ticket tfoot td{
-          border-top:1px solid #999;
-          font-weight:bold;
+        
+        .ticket-divider {
+          margin: 4px 0;
+          font-size: 8px;
+          overflow: hidden;
         }
-        .right{text-align:right}
-        @media print{
-          @page { size: 80mm auto; margin: 0mm; }
-          body{background:#fff}
-          #ticket{
-            width:80mm;
-            max-width:80mm;
-            margin:0;
-            padding:2mm;
-            border:none;
+        
+        .ticket-info {
+          margin: 6px 0;
+        }
+        
+        .ticket-info p {
+          margin: 2px 0;
+          font-size: 9px;
+        }
+        
+        .ticket-info strong {
+          font-weight: bold;
+        }
+        
+        .ticket-items-header {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
+          gap: 2px;
+          font-weight: bold;
+          font-size: 8px;
+          margin-bottom: 2px;
+        }
+        
+        .ticket-items-header span {
+          text-align: right;
+        }
+        
+        .ticket-items-header span:first-child {
+          text-align: left;
+        }
+        
+        .ticket-item {
+          margin: 4px 0;
+        }
+        
+        .ticket-item-name {
+          font-size: 9px;
+          font-weight: bold;
+          margin-bottom: 2px;
+          word-wrap: break-word;
+        }
+        
+        .ticket-item-details {
+          display: grid;
+          grid-template-columns: 1fr 1.2fr 1.2fr;
+          gap: 2px;
+          font-size: 8px;
+          text-align: right;
+        }
+        
+        .ticket-total {
+          display: flex;
+          justify-content: space-between;
+          font-size: 11px;
+          font-weight: bold;
+          margin: 6px 0;
+        }
+        
+        .ticket-footer {
+          text-align: center;
+          margin-top: 8px;
+          font-size: 9px;
+        }
+        
+        .ticket-footer p {
+          margin: 2px 0;
+        }
+        
+        .ticket-signature {
+          text-align: center;
+          margin-top: 8px;
+          font-size: 9px;
+        }
+        
+        .ticket-signature p {
+          margin: 4px 0 2px 0;
+          font-weight: bold;
+        }
+        
+        .signature-line {
+          border-bottom: 1px solid #000;
+          width: 100%;
+          height: 20px;
+          margin-top: 4px;
+        }
+        
+        @media print {
+          @page {
+            size: 80mm auto;
+            margin: 0mm;
           }
-          tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
+          
+          body {
+            background: #fff;
+          }
+          
+          .ticket-preview {
+            width: 80mm;
+            max-width: 80mm;
+            margin: 0;
+            padding: 2mm;
+          }
         }
       </style>
     </head>
     <body>
-      <div id="ticket">
-        <h3>${STORE_NAME}</h3>
-        <div class="meta">
-          Ticket de Venta<br/>
-          Cliente: ${cliente}<br/>
-          Folio: ${ticket.id}<br/>
-          Fecha: ${fecha}<br/>
-          Pago: ${obs}
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Prod</th>
-              <th class="right">Cant</th>
-              <th class="right">Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filas}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="2" class="right">TOTAL:</td>
-              <td class="right">$${to2(ticket.total)}</td>
-            </tr>
-          </tfoot>
-        </table>
-        <div style="margin-top:6px;text-align:center;font-size:11px">
-          ¡Gracias por su preferencia! ¡Carnes y Visceras del Centro tu mejor aliado!
+      <div class="ticket-preview">
+        <div class="ticket-content">
+          <!-- Header -->
+          <div class="ticket-header">
+            <h1>CARNICERÍA</h1>
+            <p class="ticket-subtitle">Sistema de Gestión</p>
+          </div>
+
+          <!-- Divider -->
+          <div class="ticket-divider">${'='.repeat(32)}</div>
+
+          <!-- Ticket Info -->
+          <div class="ticket-info">
+            <p><strong>Ticket:</strong> #${ticket.id.toString().padStart(6, '0')}</p>
+            <p><strong>Fecha:</strong> ${formatDate(ticket.createdAt)}</p>
+            <p><strong>Pago:</strong> ${ticket.paymentType}</p>
+            ${ticket.user ? `<p><strong>Cajero:</strong> ${ticket.user.name}</p>` : ''}
+            ${ticket.client ? `<p><strong>Cliente:</strong> ${ticket.client.name}</p>` : ''}
+          </div>
+
+          <!-- Divider -->
+          <div class="ticket-divider">${'='.repeat(32)}</div>
+
+          <!-- Items -->
+          <div class="ticket-items">
+            <div class="ticket-items-header">
+              <span>PRODUCTO</span>
+              <span>CANT</span>
+              <span>PRECIO</span>
+              <span>TOTAL</span>
+            </div>
+            <div class="ticket-divider">${'-'.repeat(32)}</div>
+            ${itemsHtml}
+          </div>
+
+          <!-- Divider -->
+          <div class="ticket-divider">${'='.repeat(32)}</div>
+
+          <!-- Total -->
+          <div class="ticket-total">
+            <span>TOTAL:</span>
+            <span>${formatter.format(ticket.total)}</span>
+          </div>
+
+          <!-- Divider -->
+          <div class="ticket-divider">${'='.repeat(32)}</div>
+
+          <!-- Footer -->
+          <div class="ticket-footer">
+            <p>¡Gracias por su compra!</p>
+            <p>Vuelva pronto</p>
+          </div>
+
+          <!-- Signature -->
+          <div class="ticket-signature">
+            <p>Firma de recibido:</p>
+            <div class="signature-line">____________________</div>
+          </div>
         </div>
       </div>
     </body>
