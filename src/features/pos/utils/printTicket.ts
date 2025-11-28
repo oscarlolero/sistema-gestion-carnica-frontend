@@ -35,11 +35,13 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
   `).join('')
 
   // Calculamos los tamaños relativos basados en TICKET_BASE_FONT_SIZE
-  const headerSize = TICKET_BASE_FONT_SIZE + 5 // 18px
+  const headerSize = TICKET_BASE_FONT_SIZE + 1 // 18px
   const dividerSize = TICKET_BASE_FONT_SIZE - 1 // 12px
-  const itemNameSize = TICKET_BASE_FONT_SIZE // 13px
-  const detailsSize = TICKET_BASE_FONT_SIZE - 1 // 12px
+  const itemNameSize = TICKET_BASE_FONT_SIZE + 3 // 13px
+  const detailsSize = TICKET_BASE_FONT_SIZE + 3 // 12px
   const totalSize = TICKET_BASE_FONT_SIZE + 2 // 15px
+
+  const dividersLength = 39
 
   return `
   <!DOCTYPE html>
@@ -208,7 +210,7 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
         </div>
 
         <!-- Divider -->
-        <div class="ticket-divider">${'='.repeat(32)}</div>
+        <div class="ticket-divider">${'='.repeat(dividersLength)}</div>
 
         <!-- Ticket Info -->
         <div class="ticket-info">
@@ -220,7 +222,7 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
         </div>
 
         <!-- Divider -->
-        <div class="ticket-divider">${'='.repeat(32)}</div>
+        <div class="ticket-divider">${'='.repeat(dividersLength)}</div>
 
         <!-- Items -->
         <div class="ticket-items">
@@ -230,12 +232,12 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
             <span>PRECIO</span>
             <span>TOTAL</span>
           </div>
-          <div class="ticket-divider">${'-'.repeat(32)}</div>
+          <div class="ticket-divider">${'-'.repeat(dividersLength)}</div>
           ${itemsHtml}
         </div>
 
         <!-- Divider -->
-        <div class="ticket-divider">${'='.repeat(32)}</div>
+        <div class="ticket-divider">${'='.repeat(dividersLength)}</div>
 
         <!-- Total -->
         <div class="ticket-total">
@@ -244,7 +246,7 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
         </div>
 
         <!-- Divider -->
-        <div class="ticket-divider">${'='.repeat(32)}</div>
+        <div class="ticket-divider">${'='.repeat(dividersLength)}</div>
 
         <!-- Footer -->
         <div class="ticket-footer">
