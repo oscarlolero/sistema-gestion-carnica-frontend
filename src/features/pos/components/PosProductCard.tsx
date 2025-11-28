@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { CloseOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Button, InputNumber, Select } from 'antd'
 import type { ProductResponse } from '@/features/products/types'
+import { useProductPricing } from '../hooks/useProductPricing'
 
 type PosProductCardProps = {
   product: ProductResponse
@@ -9,22 +10,12 @@ type PosProductCardProps = {
 }
 
 export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
-  // Initialize unit based on available pricing from base product
-  const getInitialUnit = (): 'kg' | 'pz' => {
-    const hasKg = product.pricePerKg !== null && product.pricePerKg !== undefined
-    const hasUnit = product.pricePerUnit !== null && product.pricePerUnit !== undefined
-
-    if (hasKg && hasUnit) return 'kg' // default to kg if both available
-    if (hasUnit) return 'pz' // prefer unit if only unit price exists
-    if (hasKg) return 'kg'
-    return 'pz' // fallback
-  }
-
   const [selectedCut, setSelectedCut] = useState<number | undefined>(undefined)
-  const [selectedUnit, setSelectedUnit] = useState<'kg' | 'pz'>(getInitialUnit())
   const [showQuantityInput, setShowQuantityInput] = useState(false)
   const [quantity, setQuantity] = useState(1)
+
   const hasCuts = product.cuts && product.cuts.length > 0
+  const { selectedUnit, setSelectedUnit, price, hasBothPrices } = useProductPricing(product, selectedCut)
 
   // Reset quantity input when changing cut or unit
   useEffect(() => {
@@ -32,49 +23,8 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
     setQuantity(1)
   }, [selectedCut, selectedUnit])
 
-  // Get available pricing options based on selected cut or base product
-  const getAvailablePricing = () => {
-    if (hasCuts && selectedCut !== undefined) {
-      const cut = product.cuts?.find((c) => c.cutId === selectedCut)
-      return {
-        pricePerKg: cut?.pricePerKg,
-        pricePerUnit: cut?.pricePerUnit,
-      }
-    }
-    return {
-      pricePerKg: product.pricePerKg,
-      pricePerUnit: product.pricePerUnit,
-    }
-  }
-
-  const pricing = getAvailablePricing()
-  const hasKgPrice = pricing.pricePerKg !== null && pricing.pricePerKg !== undefined
-  const hasUnitPrice = pricing.pricePerUnit !== null && pricing.pricePerUnit !== undefined
-  const hasBothPrices = hasKgPrice && hasUnitPrice
-
-  // Get current price based on selected unit
-  const getCurrentPrice = () => {
-    const rawPrice = selectedUnit === 'kg' ? pricing.pricePerKg : pricing.pricePerUnit
-    const numPrice = typeof rawPrice === 'string' ? Number(rawPrice) : (rawPrice ?? 0)
-    return numPrice && !isNaN(numPrice) ? numPrice : 0
-  }
-
-  const price = getCurrentPrice()
-
-  // Set default unit when pricing changes
   const handleCutChange = (cutId: number | undefined) => {
     setSelectedCut(cutId)
-
-    // Reset unit selection based on available pricing
-    const newPricing = cutId
-      ? product.cuts?.find((c) => c.cutId === cutId)
-      : { pricePerKg: product.pricePerKg, pricePerUnit: product.pricePerUnit }
-
-    if (newPricing?.pricePerKg) {
-      setSelectedUnit('kg')
-    } else if (newPricing?.pricePerUnit) {
-      setSelectedUnit('pz')
-    }
   }
 
   const handleAdd = () => {
@@ -123,9 +73,7 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <h3 className="text-base font-semibold text-[#2d2d2d]">{product.name}</h3>
-            <p className="text-sm text-[#8c8c8c]">
-              {selectedUnit === 'kg' ? 'Por kg' : 'Por pieza'}
-            </p>
+            <p className="text-sm text-[#8c8c8c]">{selectedUnit === 'kg' ? 'Por kg' : 'Por pieza'}</p>
           </div>
           <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-sm font-semibold text-[#b22222]">
             ${price.toFixed(2)}

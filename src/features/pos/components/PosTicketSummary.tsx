@@ -1,26 +1,16 @@
 import { useState } from 'react'
-import { Button, InputNumber, Modal, Select, Form, Input } from 'antd'
-import {
-  CloseOutlined,
-  MinusOutlined,
-  PlusOutlined,
-  FileTextOutlined,
-  EditOutlined,
-  PrinterOutlined,
-  UserOutlined,
-  UserAddOutlined,
-} from '@ant-design/icons'
+import { Button, Select, message } from 'antd'
+import { FileTextOutlined, UserOutlined, UserAddOutlined } from '@ant-design/icons'
 import type { CartItem, PaymentType } from '../types'
 import { paymentTypeLabels } from '../types'
 import { useCreateTicket } from '@/features/tickets/queries'
-import { useCreateUser } from '@/features/users/queries'
 import type { User } from '@/features/users/types'
-import { message } from 'antd'
-import { PrintableTicket } from './PrintableTicket'
 import type { TicketResponse } from '@/features/tickets/types'
 import type { Client } from '@/features/clients/types'
-import { useCreateClient } from '@/features/clients/queries'
-import { generateTicket80mmHTML } from '../utils/printTicket'
+import { AddUserModal } from './AddUserModal'
+import { AddClientModal } from './AddClientModal'
+import { PrintTicketModal } from './PrintTicketModal'
+import { TicketItem } from './TicketItem'
 
 type PosTicketSummaryProps = {
   items: CartItem[]
@@ -42,8 +32,6 @@ const formatter = new Intl.NumberFormat('es-MX', {
   currency: 'MXN',
 })
 
-const to2 = (n: number | string) => Number(n || 0).toFixed(2)
-
 export const PosTicketSummary = ({
   items,
   paymentType,
@@ -59,40 +47,14 @@ export const PosTicketSummary = ({
   onClientChange,
 }: PosTicketSummaryProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
-  const [editingItemId, setEditingItemId] = useState<string | null>(null)
-  const [tempQuantity, setTempQuantity] = useState<string>('')
   const [showPrintDialog, setShowPrintDialog] = useState(false)
   const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [showAddClientModal, setShowAddClientModal] = useState(false)
   const [createdTicket, setCreatedTicket] = useState<TicketResponse | null>(null)
-  
+
   const createTicketMutation = useCreateTicket()
-  const createUserMutation = useCreateUser()
-  const createClientMutation = useCreateClient()
-  const [form] = Form.useForm()
-  const [clientForm] = Form.useForm()
 
   const total = items.reduce((sum, item) => sum + item.subtotal, 0)
-
-  const handleQuantityClick = (item: CartItem) => {
-    setEditingItemId(item.id)
-    setTempQuantity(item.quantity.toString())
-  }
-
-  const handleQuantityChange = (value: string) => {
-    setTempQuantity(value)
-  }
-
-  const handleQuantityConfirm = () => {
-    if (editingItemId && tempQuantity) {
-      const quantity = parseFloat(tempQuantity)
-      if (!isNaN(quantity) && quantity > 0) {
-        onUpdateQuantity(editingItemId, quantity)
-      }
-    }
-    setEditingItemId(null)
-    setTempQuantity('')
-  }
 
   const handleFinalizeSale = async () => {
     if (items.length === 0) {
@@ -133,23 +95,7 @@ export const PosTicketSummary = ({
     }
   }
 
-  const printTicket80mm = (ticket: TicketResponse) => {
-    const html = generateTicket80mmHTML(ticket)
-
-    const win = window.open('', '_blank', 'width=400,height=600')
-    if (win) {
-      win.document.open()
-      win.document.write(html)
-      win.document.close()
-      win.focus()
-      setTimeout(() => { win.print() }, 300)
-    }
-  }
-
   const handlePrintConfirm = () => {
-    if (createdTicket) {
-      printTicket80mm(createdTicket)
-    }
     setShowPrintDialog(false)
     onClearCart()
     setCreatedTicket(null)
@@ -159,32 +105,6 @@ export const PosTicketSummary = ({
     setShowPrintDialog(false)
     onClearCart()
     setCreatedTicket(null)
-  }
-
-  const handleCreateUser = async (values: { name: string }) => {
-    try {
-      const newUser = await createUserMutation.mutateAsync(values)
-      message.success('Empleado agregado exitosamente')
-      setShowAddUserModal(false)
-      form.resetFields()
-      onUserChange(newUser.id)
-    } catch (error) {
-      message.error('Error al agregar empleado')
-      console.error('Error creating user:', error)
-    }
-  }
-
-  const handleCreateClient = async (values: { name: string }) => {
-    try {
-      const newClient = await createClientMutation.mutateAsync(values)
-      message.success('Cliente agregado exitosamente')
-      setShowAddClientModal(false)
-      clientForm.resetFields()
-      onClientChange(newClient.id)
-    } catch (error) {
-      message.error('Error al agregar cliente')
-      console.error('Error creating client:', error)
-    }
   }
 
   return (
@@ -231,8 +151,6 @@ export const PosTicketSummary = ({
             className="border-[#b22222] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#b22222] hover:text-[#b22222]"
           />
         </div>
-
-
       </div>
 
       {items.length === 0 ? (
@@ -246,74 +164,12 @@ export const PosTicketSummary = ({
       ) : (
         <div className="flex-1 space-y-4 overflow-y-auto">
           {items.map((item) => (
-            <div
+            <TicketItem
               key={item.id}
-              className="flex flex-col gap-3 rounded-2xl border border-[#f3e3d4] bg-[#fef9f4] p-4"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#2d2d2d]">{item.productName}</p>
-                  {item.cutName && <p className="text-xs text-[#b22222]">{item.cutName}</p>}
-                  <p className="text-xs text-[#8c8c8c]">
-                    {formatter.format(item.unitPrice)} / {item.unit}
-                  </p>
-                </div>
-                <Button
-                  type="text"
-                  shape="circle"
-                  size="small"
-                  icon={<CloseOutlined />}
-                  onClick={() => onRemoveItem(item.id)}
-                  className="text-[#8c8c8c] hover:text-[#b22222] p-0 h-5 w-5 min-w-5 flex items-center justify-center"
-                  title="Eliminar"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    icon={<MinusOutlined />}
-                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    size="small"
-                    shape="circle"
-                    className="h-4 w-4 bg-white border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#e9d9cc] p-0"
-                  />
-                  {editingItemId === item.id ? (
-                    <InputNumber
-                      value={tempQuantity}
-                      onChange={(value) => handleQuantityChange(value ?? '')}
-                      onPressEnter={handleQuantityConfirm}
-                      onBlur={handleQuantityConfirm}
-                      size="small"
-                      autoFocus
-                      className="w-20 text-center text-sm font-semibold"
-                      type="number"
-                      min="0"
-                      step="1"
-                    />
-                  ) : (
-                    <span
-                      onClick={() => handleQuantityClick(item)}
-                      className="flex items-center gap-1 min-w-10 text-center text-sm font-semibold text-[#2d2d2d] cursor-pointer hover:text-[#b22222] transition-colors"
-                    >
-                      <span>
-                        {item.quantity} {item.unit}
-                      </span>
-                      <EditOutlined className="text-[10px] opacity-60" />
-                    </span>
-                  )}
-                  <Button
-                    icon={<PlusOutlined size={16} />}
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    shape="circle"
-                    size="small"
-                    className="h-4 w-4 bg-white border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#e9d9cc] p-0"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-[#b22222]">
-                  {formatter.format(item.subtotal)}
-                </span>
-              </div>
-            </div>
+              item={item}
+              onUpdateQuantity={onUpdateQuantity}
+              onRemoveItem={onRemoveItem}
+            />
           ))}
         </div>
       )}
@@ -363,97 +219,25 @@ export const PosTicketSummary = ({
         </Button>
       </div>
 
-      {/* Print Dialog */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <PrinterOutlined className="text-[#b22222]" />
-            <span>Imprimir Ticket</span>
-          </div>
-        }
+      {/* Modals */}
+      <PrintTicketModal
         open={showPrintDialog}
-        onOk={handlePrintConfirm}
+        ticket={createdTicket}
+        onConfirm={handlePrintConfirm}
         onCancel={handlePrintCancel}
-        okText="Imprimir"
-        cancelText="No imprimir"
-        width={600}
-        centered
-        okButtonProps={{
-          className: 'bg-[#b22222] hover:bg-[#921c1c] border-[#b22222] hover:border-[#921c1c]',
-        }}
-      >
-        <div className="py-4">
-          <p className="mb-4 text-center text-[#4a4a4a]">
-            ¿Desea imprimir el ticket de esta venta?
-          </p>
-          {createdTicket && (
-            <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
-              <PrintableTicket ticket={createdTicket} />
-            </div>
-          )}
-        </div>
-      </Modal>
+      />
 
-      {/* Add User Modal */}
-      <Modal
-        title="Agregar Empleado"
+      <AddUserModal
         open={showAddUserModal}
-        onCancel={() => {
-          setShowAddUserModal(false)
-          form.resetFields()
-        }}
-        footer={null}
-        centered
-      >
-        <Form form={form} onFinish={handleCreateUser} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Nombre del empleado"
-            rules={[{ required: true, message: 'Por favor ingrese el nombre' }]}
-          >
-            <Input placeholder="Ej. Juan Perez" />
-          </Form.Item>
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => setShowAddUserModal(false)}>Cancelar</Button>
-            <Button type="primary" htmlType="submit" loading={createUserMutation.isPending} className="bg-[#b22222] hover:bg-[#921c1c]">
-              Guardar
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        onClose={() => setShowAddUserModal(false)}
+        onUserCreated={onUserChange}
+      />
 
-      {/* Add Client Modal */}
-      <Modal
-        title="Agregar Cliente"
+      <AddClientModal
         open={showAddClientModal}
-        onCancel={() => {
-          setShowAddClientModal(false);
-          clientForm.resetFields();
-        }}
-        footer={null}
-        centered
-      >
-        <Form form={clientForm} onFinish={handleCreateClient} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Nombre del cliente"
-            rules={[{ required: true, message: 'Por favor ingrese el nombre' }]}
-          >
-            <Input placeholder="Ej. Cliente XYZ" />
-          </Form.Item>
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => setShowAddClientModal(false)}>Cancelar</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={createClientMutation.isPending}
-              className="bg-[#b22222] hover:bg-[#921c1c]"
-            >
-              Guardar
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        onClose={() => setShowAddClientModal(false)}
+        onClientCreated={onClientChange}
+      />
     </aside>
   )
 }

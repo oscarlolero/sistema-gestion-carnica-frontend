@@ -3,14 +3,11 @@ import { PosCategoryFilter, PosProductGrid, PosSearchBar, PosTicketSummary } fro
 import { useProducts, useCategories } from '@/features/products/queries'
 import { useUsers } from '@/features/users/queries'
 import { useClients } from '@/features/clients/queries'
-import type { CartItem, PaymentType } from '../types'
-import type { ProductResponse } from '@/features/products/types'
+import { useCart } from '../hooks/useCart'
 
 export const PosPage = () => {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<number | 'all'>('all')
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [paymentType, setPaymentType] = useState<PaymentType>('cash')
 
   // Fetch products, categories, and users from backend
   const { data: productsData, isLoading: productsLoading } = useProducts({ page: 1, limit: 1000 })
@@ -18,8 +15,20 @@ export const PosPage = () => {
   const { data: usersData } = useUsers()
   const { data: clientsData } = useClients()
 
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
-  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
+  // Cart management
+  const {
+    cart,
+    paymentType,
+    setPaymentType,
+    selectedUserId,
+    setSelectedUserId,
+    selectedClientId,
+    setSelectedClientId,
+    handleAddToCart,
+    handleUpdateQuantity,
+    handleRemoveItem,
+    handleClearCart,
+  } = useCart()
 
   // Prepare categories for filter (add 'all' option)
   const categoryOptions = useMemo(
@@ -40,98 +49,11 @@ export const PosPage = () => {
 
     return products.filter((product) => {
       const matchesCategory =
-        activeCategory === 'all'
-          ? true
-          : product.categories?.some((cat) => cat.categoryId === activeCategory)
-      const matchesSearch = normalizedSearch
-        ? product.name.toLowerCase().includes(normalizedSearch)
-        : true
+        activeCategory === 'all' ? true : product.categories?.some((cat) => cat.categoryId === activeCategory)
+      const matchesSearch = normalizedSearch ? product.name.toLowerCase().includes(normalizedSearch) : true
       return matchesCategory && matchesSearch
     })
   }, [activeCategory, search, productsData?.data])
-
-  // Add product to cart
-  const handleAddToCart = (
-    product: ProductResponse,
-    cutId?: number,
-    unit?: 'kg' | 'pz',
-    quantityToAdd?: number,
-  ) => {
-    const cut = cutId ? product.cuts?.find((c) => c.cutId === cutId) : undefined
-
-    // Get price based on selected unit
-    const selectedUnit = unit ?? 'kg'
-    const rawPrice = cut
-      ? ((selectedUnit === 'kg' ? cut.pricePerKg : cut.pricePerUnit) ?? 0)
-      : ((selectedUnit === 'kg' ? product.pricePerKg : product.pricePerUnit) ?? 0)
-    const unitPrice = typeof rawPrice === 'string' ? Number(rawPrice) : (rawPrice ?? 0)
-
-    // Create unique cart item ID including unit
-    const cartItemId = cutId
-      ? `${product.id}-${cutId}-${selectedUnit}`
-      : `${product.id}-${selectedUnit}`
-
-    const addQuantity = quantityToAdd ?? 1
-
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === cartItemId)
-
-      if (existingItem) {
-        // Add quantity
-        return prevCart.map((item) =>
-          item.id === cartItemId
-            ? {
-                ...item,
-                quantity: item.quantity + addQuantity,
-                subtotal: (item.quantity + addQuantity) * item.unitPrice,
-              }
-            : item,
-        )
-      }
-
-      // Add new item
-      const cutName = cutId ? (cut?.cut?.name ?? `Corte #${cutId}`) : undefined
-
-      const newItem: CartItem = {
-        id: cartItemId,
-        productId: product.id,
-        productName: product.name,
-        cutId,
-        cutName,
-        quantity: addQuantity,
-        unitPrice,
-        subtotal: addQuantity * unitPrice,
-        unit: selectedUnit,
-      }
-
-      return [...prevCart, newItem]
-    })
-  }
-
-  // Update cart item quantity
-  const handleUpdateQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== itemId))
-    } else {
-      setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.id === itemId ? { ...item, quantity, subtotal: quantity * item.unitPrice } : item,
-        ),
-      )
-    }
-  }
-
-  // Remove item from cart
-  const handleRemoveItem = (itemId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== itemId))
-  }
-
-  // Clear cart
-  const handleClearCart = () => {
-    setCart([])
-    setSelectedUserId(null)
-    setSelectedClientId(null)
-  }
 
   const isLoading = productsLoading || categoriesLoading
 

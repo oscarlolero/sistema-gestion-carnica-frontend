@@ -1,53 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Layout, Menu, Button, Grid, Typography, theme as antdTheme } from 'antd'
 import type { MenuProps } from 'antd'
-import {
-  AppstoreOutlined,
-  FileTextOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-} from '@ant-design/icons'
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useNavigation, getBasePath } from './navigation'
 
 const { Sider, Header, Content } = Layout
 const { useToken } = antdTheme
-
-const getBasePath = (pathname: string) => {
-  if (pathname === '/') return '/products'
-  const [, firstSegment] = pathname.split('/')
-  return `/${firstSegment}`
-}
 
 export const AppLayout = () => {
   const location = useLocation()
   const { token } = useToken()
   const screens = Grid.useBreakpoint()
   const [collapsed, setCollapsed] = useState(false)
+  const { navItems } = useNavigation()
 
   useEffect(() => {
     setCollapsed(!screens.lg)
   }, [screens.lg])
-
-  const navItems = useMemo(
-    () => [
-      {
-        key: '/products',
-        label: 'Productos',
-        icon: <AppstoreOutlined />,
-      },
-      {
-        key: '/pos',
-        label: 'POS',
-        icon: <AppstoreOutlined />,
-      },
-      {
-        key: '/tickets',
-        label: 'Tickets',
-        icon: <FileTextOutlined />,
-      },
-    ],
-    [],
-  )
 
   const menuItems: MenuProps['items'] = useMemo(
     () =>
@@ -133,18 +103,12 @@ export const AppLayout = () => {
               justifyContent: 'center',
             }}
           />
-          <Typography.Title
-            level={4}
-            style={{ margin: 0, color: token.colorText, fontWeight: 600 }}
-          >
+          <Typography.Title level={4} style={{ margin: 0, color: token.colorText, fontWeight: 600 }}>
             {navItems.find((item) => item.key === selectedKey)?.label ?? 'ERROR'}
           </Typography.Title>
         </Header>
 
-        <Content
-          className="flex flex-col h-[calc(100vh-64px)] m-0 p-0"
-          style={{ background: token.colorBgLayout }}
-        >
+        <Content className="flex flex-col h-[calc(100vh-64px)] m-0 p-0" style={{ background: token.colorBgLayout }}>
           <div
             className={`bg-white rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.05)] flex-1 overflow-auto min-h-0 ${
               screens.xs ? 'm-4 p-4' : 'm-6 p-6'
