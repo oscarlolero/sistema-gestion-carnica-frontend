@@ -1,6 +1,10 @@
 import { TicketResponse } from '@/features/tickets/types'
 
-export const printTicket = (ticket: TicketResponse) => {
+// Constante para controlar el tamaño base de la fuente del ticket
+// Cambia este valor para ajustar el tamaño de toda la letra del ticket
+export const TICKET_BASE_FONT_SIZE = 13 // px (antes era 9px)
+
+export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
   const formatter = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -30,7 +34,14 @@ export const printTicket = (ticket: TicketResponse) => {
     </div>
   `).join('')
 
-  const html = `
+  // Calculamos los tamaños relativos basados en TICKET_BASE_FONT_SIZE
+  const headerSize = TICKET_BASE_FONT_SIZE + 5 // 18px
+  const dividerSize = TICKET_BASE_FONT_SIZE - 1 // 12px
+  const itemNameSize = TICKET_BASE_FONT_SIZE // 13px
+  const detailsSize = TICKET_BASE_FONT_SIZE - 1 // 12px
+  const totalSize = TICKET_BASE_FONT_SIZE + 2 // 15px
+
+  return `
   <!DOCTYPE html>
   <html lang="es">
   <head>
@@ -52,7 +63,7 @@ export const printTicket = (ticket: TicketResponse) => {
       
       .ticket-preview {
         width: 80mm;
-        font-size: 9px;
+        font-size: ${TICKET_BASE_FONT_SIZE}px;
         line-height: 1.3;
         color: #000;
         background: white;
@@ -66,20 +77,20 @@ export const printTicket = (ticket: TicketResponse) => {
       }
       
       .ticket-header h1 {
-        font-size: 14px;
+        font-size: ${headerSize}px;
         font-weight: bold;
         margin: 0 0 2px 0;
         letter-spacing: 1px;
       }
       
       .ticket-subtitle {
-        font-size: 9px;
+        font-size: ${TICKET_BASE_FONT_SIZE}px;
         margin: 0;
       }
       
       .ticket-divider {
         margin: 4px 0;
-        font-size: 8px;
+        font-size: ${dividerSize}px;
         overflow: hidden;
       }
       
@@ -89,7 +100,7 @@ export const printTicket = (ticket: TicketResponse) => {
       
       .ticket-info p {
         margin: 2px 0;
-        font-size: 9px;
+        font-size: ${TICKET_BASE_FONT_SIZE}px;
       }
       
       .ticket-info strong {
@@ -101,7 +112,7 @@ export const printTicket = (ticket: TicketResponse) => {
         grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
         gap: 2px;
         font-weight: bold;
-        font-size: 8px;
+        font-size: ${detailsSize}px;
         margin-bottom: 2px;
       }
       
@@ -118,7 +129,7 @@ export const printTicket = (ticket: TicketResponse) => {
       }
       
       .ticket-item-name {
-        font-size: 9px;
+        font-size: ${itemNameSize}px;
         font-weight: bold;
         margin-bottom: 2px;
         word-wrap: break-word;
@@ -128,14 +139,14 @@ export const printTicket = (ticket: TicketResponse) => {
         display: grid;
         grid-template-columns: 1fr 1.2fr 1.2fr;
         gap: 2px;
-        font-size: 8px;
+        font-size: ${detailsSize}px;
         text-align: right;
       }
       
       .ticket-total {
         display: flex;
         justify-content: space-between;
-        font-size: 11px;
+        font-size: ${totalSize}px;
         font-weight: bold;
         margin: 6px 0;
       }
@@ -143,7 +154,7 @@ export const printTicket = (ticket: TicketResponse) => {
       .ticket-footer {
         text-align: center;
         margin-top: 8px;
-        font-size: 9px;
+        font-size: ${TICKET_BASE_FONT_SIZE}px;
       }
       
       .ticket-footer p {
@@ -153,7 +164,7 @@ export const printTicket = (ticket: TicketResponse) => {
       .ticket-signature {
         text-align: center;
         margin-top: 8px;
-        font-size: 9px;
+        font-size: ${TICKET_BASE_FONT_SIZE}px;
       }
       
       .ticket-signature p {
@@ -192,7 +203,7 @@ export const printTicket = (ticket: TicketResponse) => {
       <div class="ticket-content">
         <!-- Header -->
         <div class="ticket-header">
-          <h1>CARNICERÍA</h1>
+          <h1>CARNES Y VÍCERAS DEL CENTRO</h1>
           <p class="ticket-subtitle">Sistema de Gestión</p>
         </div>
 
@@ -251,6 +262,10 @@ export const printTicket = (ticket: TicketResponse) => {
   </body>
   </html>
   `
+}
+
+export const printTicket = (ticket: TicketResponse) => {
+  const html = generateTicket80mmHTML(ticket)
 
   const win = window.open('', '_blank', 'width=400,height=600')
   if (win) {
