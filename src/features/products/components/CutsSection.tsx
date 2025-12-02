@@ -22,8 +22,8 @@ export const CutsSection = ({ control, fields, append, remove, options }: CutsSe
         <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 px-4">
           <SettingOutlined className="text-4xl text-gray-300 mb-2" />
           <p className="text-sm">
-            No se han agregado cortes aún. Agrega cortes para definir precios específicos para diferentes
-            porciones.
+            No se han agregado cortes aún. Agrega cortes para definir precios específicos para
+            diferentes porciones.
           </p>
         </div>
       )}
@@ -60,6 +60,7 @@ export const CutsSection = ({ control, fields, append, remove, options }: CutsSe
                     {...field}
                     min={0}
                     step={0.01}
+                    inputMode="decimal"
                     className="w-full"
                     placeholder="0.00"
                     addonAfter="$"
@@ -78,6 +79,7 @@ export const CutsSection = ({ control, fields, append, remove, options }: CutsSe
                     {...field}
                     min={0}
                     step={0.01}
+                    inputMode="decimal"
                     className="w-full"
                     placeholder="0.00"
                     addonAfter="$"
@@ -86,7 +88,12 @@ export const CutsSection = ({ control, fields, append, remove, options }: CutsSe
               />
             </div>
 
-            <Button danger icon={<DeleteOutlined />} onClick={() => remove(idx)} className="w-full md:w-auto">
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => remove(idx)}
+              className="w-full md:w-auto"
+            >
               Eliminar
             </Button>
           </div>

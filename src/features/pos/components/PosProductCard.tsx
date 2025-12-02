@@ -158,6 +158,7 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
                 onChange={handleQuantityChange}
                 onPressEnter={handleAdd}
                 autoFocus
+                inputMode="decimal"
                 className="flex-1 [&_.ant-input]:text-center [&_.ant-input]:font-semibold"
               />
               <Button

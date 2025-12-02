@@ -77,6 +77,7 @@ export const TicketItem = ({ item, onUpdateQuantity, onRemoveItem }: TicketItemP
               onBlur={handleQuantityConfirm}
               size="small"
               autoFocus
+              inputMode="decimal"
               className="w-20 text-center text-sm font-semibold"
               type="number"
               min="0"

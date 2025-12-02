@@ -114,7 +114,9 @@ export const BasicInfoSection = ({ control, errors, options }: BasicInfoSectionP
         <Controller
           control={control}
           name="imageUrl"
-          render={({ field }) => <CloudinaryUploadWidget value={field.value} onChange={field.onChange} />}
+          render={({ field }) => (
+            <CloudinaryUploadWidget value={field.value} onChange={field.onChange} />
+          )}
         />
         {errors.imageUrl && (
           <div className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -192,6 +194,7 @@ export const BasicInfoSection = ({ control, errors, options }: BasicInfoSectionP
                   min={0}
                   step={1}
                   size="large"
+                  inputMode="decimal"
                   className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
                   placeholder="0.00"
                   addonAfter="$/kg"
@@ -221,6 +224,7 @@ export const BasicInfoSection = ({ control, errors, options }: BasicInfoSectionP
                   min={0}
                   step={1}
                   size="large"
+                  inputMode="decimal"
                   className="w-full rounded-lg border-gray-200 hover:border-green-400 focus:border-green-500 transition-colors"
                   placeholder="0.00"
                   addonAfter="$/unit"
