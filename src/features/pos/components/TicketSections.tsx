@@ -8,9 +8,10 @@ const formatter = new Intl.NumberFormat('es-MX', {
 type TicketHeaderProps = {
   ticket: TicketResponse
   formatDate: (dateString: string) => string
+  showPrices?: boolean
 }
 
-export const TicketHeader = ({ ticket, formatDate }: TicketHeaderProps) => {
+export const TicketHeader = ({ ticket, formatDate, showPrices = true }: TicketHeaderProps) => {
   return (
     <>
       <div className="ticket-header">
@@ -27,9 +28,11 @@ export const TicketHeader = ({ ticket, formatDate }: TicketHeaderProps) => {
         <p>
           <strong>Fecha:</strong> {formatDate(ticket.createdAt)}
         </p>
-        <p>
-          <strong>Pago:</strong> {ticket.paymentType}
-        </p>
+        {showPrices && (
+          <p>
+            <strong>Pago:</strong> {ticket.paymentType}
+          </p>
+        )}
         {ticket.user && (
           <p>
             <strong>Cajero:</strong> {ticket.user.name}
@@ -49,16 +52,21 @@ export const TicketHeader = ({ ticket, formatDate }: TicketHeaderProps) => {
 
 type TicketItemsProps = {
   ticket: TicketResponse
+  showPrices?: boolean
 }
 
-export const TicketItems = ({ ticket }: TicketItemsProps) => {
+export const TicketItems = ({ ticket, showPrices = true }: TicketItemsProps) => {
+  const headerStyle = showPrices ? {} : { gridTemplateColumns: '2fr 1fr' }
+
+  const detailsStyle = showPrices ? {} : { gridTemplateColumns: '1fr', textAlign: 'left' as const }
+
   return (
     <div className="ticket-items">
-      <div className="ticket-items-header">
+      <div className="ticket-items-header" style={headerStyle}>
         <span>PRODUCTO</span>
         <span>CANT</span>
-        <span>PRECIO</span>
-        <span>TOTAL</span>
+        {showPrices && <span>PRECIO</span>}
+        {showPrices && <span>TOTAL</span>}
       </div>
       <div className="ticket-divider">{'-'.repeat(32)}</div>
       {ticket.items.map((item) => (
@@ -67,12 +75,12 @@ export const TicketItems = ({ ticket }: TicketItemsProps) => {
             {item.product.name}
             {item.cut && ` - ${item.cut.name}`}
           </div>
-          <div className="ticket-item-details">
+          <div className="ticket-item-details" style={detailsStyle}>
             <span>
               {item.quantity} {item.unit}
             </span>
-            <span>{formatter.format(item.unitPrice)}</span>
-            <span>{formatter.format(item.subtotal)}</span>
+            {showPrices && <span>{formatter.format(item.unitPrice)}</span>}
+            {showPrices && <span>{formatter.format(item.subtotal)}</span>}
           </div>
         </div>
       ))}

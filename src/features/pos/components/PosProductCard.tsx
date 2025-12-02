@@ -3,6 +3,7 @@ import { CloseOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Button, InputNumber, Select } from 'antd'
 import type { ProductResponse } from '@/features/products/types'
 import { useProductPricing } from '../hooks/useProductPricing'
+import { useSetting } from '@/features/settings/queries'
 
 type PosProductCardProps = {
   product: ProductResponse
@@ -14,8 +15,14 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
   const [showQuantityInput, setShowQuantityInput] = useState(false)
   const [quantity, setQuantity] = useState(1)
 
+  const { data: showPricesSetting } = useSetting('SHOW_PRICES_IN_POS')
+  const showPrices = showPricesSetting?.value !== 'false' // Default to true if not set or anything else
+
   const hasCuts = product.cuts && product.cuts.length > 0
-  const { selectedUnit, setSelectedUnit, price, hasBothPrices } = useProductPricing(product, selectedCut)
+  const { selectedUnit, setSelectedUnit, price, hasBothPrices } = useProductPricing(
+    product,
+    selectedCut,
+  )
 
   // Reset quantity input when changing cut or unit
   useEffect(() => {
@@ -73,11 +80,15 @@ export const PosProductCard = ({ product, onAdd }: PosProductCardProps) => {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <h3 className="text-base font-semibold text-[#2d2d2d]">{product.name}</h3>
-            <p className="text-sm text-[#8c8c8c]">{selectedUnit === 'kg' ? 'Por kg' : 'Por pieza'}</p>
+            <p className="text-sm text-[#8c8c8c]">
+              {selectedUnit === 'kg' ? 'Por kg' : 'Por pieza'}
+            </p>
           </div>
-          <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-sm font-semibold text-[#b22222]">
-            ${price.toFixed(2)}
-          </span>
+          {showPrices && (
+            <span className="rounded-full bg-[#fdf0ed] px-3 py-1 text-sm font-semibold text-[#b22222]">
+              ${price.toFixed(2)}
+            </span>
+          )}
         </div>
 
         {hasCuts && (

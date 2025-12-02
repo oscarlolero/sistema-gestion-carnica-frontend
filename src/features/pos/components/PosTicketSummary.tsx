@@ -7,6 +7,7 @@ import { useCreateTicket } from '@/features/tickets/queries'
 import type { User } from '@/features/users/types'
 import type { TicketResponse } from '@/features/tickets/types'
 import type { Client } from '@/features/clients/types'
+import { useSetting } from '@/features/settings/queries'
 import { AddUserModal } from './AddUserModal'
 import { AddClientModal } from './AddClientModal'
 import { PrintTicketModal } from './PrintTicketModal'
@@ -51,6 +52,9 @@ export const PosTicketSummary = ({
   const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [showAddClientModal, setShowAddClientModal] = useState(false)
   const [createdTicket, setCreatedTicket] = useState<TicketResponse | null>(null)
+
+  const { data: showPricesSetting } = useSetting('SHOW_PRICES_IN_POS')
+  const showPrices = showPricesSetting?.value !== 'false'
 
   const createTicketMutation = useCreateTicket()
 
@@ -175,31 +179,35 @@ export const PosTicketSummary = ({
       )}
 
       <div className="mt-4 xl:mt-6 space-y-3">
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-[#8c8c8c]">Método de pago:</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(Object.keys(paymentTypeLabels) as PaymentType[]).map((type) => (
-              <Button
-                key={type}
-                size="small"
-                type={paymentType === type ? 'primary' : 'default'}
-                onClick={() => onPaymentTypeChange(type)}
-                className={`rounded-lg px-3 py-2 h-auto text-xs font-medium ${
-                  paymentType === type
-                    ? 'bg-[#b22222] border-[#b22222] text-white hover:bg-[#921c1c] hover:border-[#921c1c] [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] [&.ant-btn-primary]:hover:border-[#921c1c]'
-                    : 'bg-white border-[#e9d9cc] text-[#4a4a4a] hover:border-[#b22222]/20'
-                }`}
-              >
-                {paymentTypeLabels[type]}
-              </Button>
-            ))}
+        {showPrices && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-[#8c8c8c]">Método de pago:</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(Object.keys(paymentTypeLabels) as PaymentType[]).map((type) => (
+                <Button
+                  key={type}
+                  size="small"
+                  type={paymentType === type ? 'primary' : 'default'}
+                  onClick={() => onPaymentTypeChange(type)}
+                  className={`rounded-lg px-3 py-2 h-auto text-xs font-medium ${
+                    paymentType === type
+                      ? 'bg-[#b22222] border-[#b22222] text-white hover:bg-[#921c1c] hover:border-[#921c1c] [&.ant-btn-primary]:bg-[#b22222] [&.ant-btn-primary]:border-[#b22222] [&.ant-btn-primary]:hover:bg-[#921c1c] [&.ant-btn-primary]:hover:border-[#921c1c]'
+                      : 'bg-white border-[#e9d9cc] text-[#4a4a4a] hover:border-[#b22222]/20'
+                  }`}
+                >
+                  {paymentTypeLabels[type]}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="flex items-center justify-between border-t border-[#e9d9cc] pt-3 text-sm text-[#4a4a4a]">
-          <span>Total</span>
-          <span className="text-lg font-semibold text-[#b22222]">{formatter.format(total)}</span>
-        </div>
+        {showPrices && (
+          <div className="flex items-center justify-between border-t border-[#e9d9cc] pt-3 text-sm text-[#4a4a4a]">
+            <span>Total</span>
+            <span className="text-lg font-semibold text-[#b22222]">{formatter.format(total)}</span>
+          </div>
+        )}
 
         <Button
           type="primary"

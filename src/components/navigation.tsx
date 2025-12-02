@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AppstoreOutlined, FileTextOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, FileTextOutlined, SettingOutlined } from '@ant-design/icons'
 
 export const useNavigation = () => {
   const navItems = useMemo(
@@ -18,6 +18,11 @@ export const useNavigation = () => {
         key: '/tickets',
         label: 'Tickets',
         icon: <FileTextOutlined />,
+      },
+      {
+        key: '/settings',
+        label: 'Configuración',
+        icon: <SettingOutlined />,
       },
     ],
     [],

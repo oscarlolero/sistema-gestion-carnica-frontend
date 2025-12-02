@@ -10,6 +10,7 @@ interface ProductFiltersProps {
   onSortByChange: (value: string) => void
   onOrderChange: (value: SortOrder) => void
   onAddProduct: () => void
+  extra?: React.ReactNode
 }
 
 export const ProductFilters = ({
@@ -20,6 +21,7 @@ export const ProductFilters = ({
   onSortByChange,
   onOrderChange,
   onAddProduct,
+  extra,
 }: ProductFiltersProps) => {
   return (
     <div className="flex items-center gap-4 flex-wrap">
@@ -56,9 +58,12 @@ export const ProductFilters = ({
           className="min-w-32"
         />
       </div>
-      <Button type="primary" onClick={onAddProduct} className="ml-auto">
-        Agregar Producto
-      </Button>
+      <div className="ml-auto flex items-center gap-4">
+        {extra}
+        <Button type="primary" onClick={onAddProduct}>
+          Agregar Producto
+        </Button>
+      </div>
     </div>
   )
 }

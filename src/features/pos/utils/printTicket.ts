@@ -4,7 +4,10 @@ import { TicketResponse } from '@/features/tickets/types'
 // Cambia este valor para ajustar el tamaño de toda la letra del ticket
 export const TICKET_BASE_FONT_SIZE = 13 // px (antes era 9px)
 
-export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
+export const generateTicket80mmHTML = (
+  ticket: TicketResponse,
+  showPrices: boolean = true,
+): string => {
   const formatter = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -21,18 +24,22 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
     })
   }
 
-  const itemsHtml = ticket.items.map((item) => `
+  const itemsHtml = ticket.items
+    .map(
+      (item) => `
     <div class="ticket-item">
       <div class="ticket-item-name">
         ${item.product.name}${item.cut ? ` - ${item.cut.name}` : ''}
       </div>
       <div class="ticket-item-details">
         <span>${item.quantity} ${item.unit}</span>
-        <span>${formatter.format(item.unitPrice)}</span>
-        <span>${formatter.format(item.subtotal)}</span>
+        ${showPrices ? `<span>${formatter.format(item.unitPrice)}</span>` : ''}
+        ${showPrices ? `<span>${formatter.format(item.subtotal)}</span>` : ''}
       </div>
     </div>
-  `).join('')
+  `,
+    )
+    .join('')
 
   // Calculamos los tamaños relativos basados en TICKET_BASE_FONT_SIZE
   const headerSize = TICKET_BASE_FONT_SIZE + 1 // 18px
@@ -111,7 +118,7 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
       
       .ticket-items-header {
         display: grid;
-        grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
+        grid-template-columns: ${showPrices ? '2fr 1fr 1.2fr 1.2fr' : '2fr 1fr'};
         gap: 2px;
         font-weight: bold;
         font-size: ${detailsSize}px;
@@ -139,10 +146,10 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
       
       .ticket-item-details {
         display: grid;
-        grid-template-columns: 1fr 1.2fr 1.2fr;
+        grid-template-columns: ${showPrices ? '1fr 1.2fr 1.2fr' : '1fr'};
         gap: 2px;
         font-size: ${detailsSize}px;
-        text-align: right;
+        text-align: ${showPrices ? 'right' : 'left'};
       }
       
       .ticket-total {
@@ -216,7 +223,7 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
         <div class="ticket-info">
           <p><strong>Ticket:</strong> #${ticket.id.toString().padStart(6, '0')}</p>
           <p><strong>Fecha:</strong> ${formatDate(ticket.createdAt)}</p>
-          <p><strong>Pago:</strong> ${ticket.paymentType}</p>
+          ${showPrices ? `<p><strong>Pago:</strong> ${ticket.paymentType}</p>` : ''}
           ${ticket.user ? `<p><strong>Cajero:</strong> ${ticket.user.name}</p>` : ''}
           ${ticket.client ? `<p><strong>Cliente:</strong> ${ticket.client.name}</p>` : ''}
         </div>
@@ -229,8 +236,8 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
           <div class="ticket-items-header">
             <span>PRODUCTO</span>
             <span>CANT</span>
-            <span>PRECIO</span>
-            <span>TOTAL</span>
+            ${showPrices ? '<span>PRECIO</span>' : ''}
+            ${showPrices ? '<span>TOTAL</span>' : ''}
           </div>
           <div class="ticket-divider">${'-'.repeat(dividersLength)}</div>
           ${itemsHtml}
@@ -240,13 +247,19 @@ export const generateTicket80mmHTML = (ticket: TicketResponse): string => {
         <div class="ticket-divider">${'='.repeat(dividersLength)}</div>
 
         <!-- Total -->
+        ${
+          showPrices
+            ? `
         <div class="ticket-total">
           <span>TOTAL:</span>
           <span>${formatter.format(ticket.total)}</span>
         </div>
-
+        
         <!-- Divider -->
         <div class="ticket-divider">${'='.repeat(dividersLength)}</div>
+        `
+            : ''
+        }
 
         <!-- Footer -->
         <div class="ticket-footer">
@@ -275,6 +288,8 @@ export const printTicket = (ticket: TicketResponse) => {
     win.document.write(html)
     win.document.close()
     win.focus()
-    setTimeout(() => { win.print() }, 300)
+    setTimeout(() => {
+      win.print()
+    }, 300)
   }
 }

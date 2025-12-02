@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, InputNumber } from 'antd'
 import { CloseOutlined, MinusOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons'
 import type { CartItem } from '../types'
+import { useSetting } from '@/features/settings/queries'
 
 type TicketItemProps = {
   item: CartItem
@@ -17,6 +18,9 @@ const formatter = new Intl.NumberFormat('es-MX', {
 export const TicketItem = ({ item, onUpdateQuantity, onRemoveItem }: TicketItemProps) => {
   const [isEditing, setIsEditing] = useState(false)
   const [tempQuantity, setTempQuantity] = useState('')
+
+  const { data: showPricesSetting } = useSetting('SHOW_PRICES_IN_POS')
+  const showPrices = showPricesSetting?.value !== 'false'
 
   const handleQuantityClick = () => {
     setIsEditing(true)
@@ -40,9 +44,11 @@ export const TicketItem = ({ item, onUpdateQuantity, onRemoveItem }: TicketItemP
         <div className="flex-1">
           <p className="text-sm font-semibold text-[#2d2d2d]">{item.productName}</p>
           {item.cutName && <p className="text-xs text-[#b22222]">{item.cutName}</p>}
-          <p className="text-xs text-[#8c8c8c]">
-            {formatter.format(item.unitPrice)} / {item.unit}
-          </p>
+          {showPrices && (
+            <p className="text-xs text-[#8c8c8c]">
+              {formatter.format(item.unitPrice)} / {item.unit}
+            </p>
+          )}
         </div>
         <Button
           type="text"
@@ -95,7 +101,11 @@ export const TicketItem = ({ item, onUpdateQuantity, onRemoveItem }: TicketItemP
             className="h-4 w-4 bg-white border-[#e9d9cc] text-[#b22222] hover:bg-[#fdf0ed] hover:border-[#e9d9cc] p-0"
           />
         </div>
-        <span className="text-sm font-semibold text-[#b22222]">{formatter.format(item.subtotal)}</span>
+        {showPrices && (
+          <span className="text-sm font-semibold text-[#b22222]">
+            {formatter.format(item.subtotal)}
+          </span>
+        )}
       </div>
     </div>
   )
